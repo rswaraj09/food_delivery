@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subscription Plans - Food Delivery</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #e1bcbc;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      text-align: center;
+    }
+
+    h1 {
+      color: #e74c3c;
+      margin-bottom: 40px;
+    }
+
+    .plans {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .plan {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      width: 280px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      border: 3px solid transparent;
+    }
+
+    .plan:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .plan.selected {
+      border-color: #e74c3c;
+      background: #fff8f6;
+    }
+
+    .plan h2 {
+      margin-bottom: 10px;
+    }
+
+    .price {
+      font-size: 24px;
+      margin: 10px 0;
+      color: #e74c3c;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 15px 0;
+    }
+
+    ul li {
+      margin: 8px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 768px) {
+      .plan {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Choose Your Subscription Plan</h1>
+    <div class="plans">
+      <div class="plan" onclick="selectPlan(this, 'Basic Plan', '999')">
+        <h2>Basic Plan</h2>
+        <p class="price">₹999/month</p>
+        <ul>
+          <li>10 Deliveries</li>
+          <li>Free Delivery within 5km</li>
+          <li>Standard Support</li>
+        </ul>
+        <button class="btn" onclick="goToPayment('Basic Plan', '999')">Subscribe</button>
+      </div>
+
+      <div class="plan" onclick="selectPlan(this, 'Pro Plan', '1499')">
+        <h2>Healthy Plan</h2>
+        <p class="price">₹1499/month</p>
+        <ul>
+          <li>30 Deliveries</li>
+          <li>Free Delivery within 10km</li>
+          <li>Priority Support</li>
+        </ul>
+        <button class="btn" onclick="goToPayment('Healthy Plan', '1499')">Subscribe</button>
+      </div>
+
+      <div class="plan" onclick="selectPlan(this, 'Premium Plan', '1999')">
+        <h2>Premium Plan</h2>
+        <p class="price">₹1999/month</p>
+        <ul>
+          <li>Unlimited Deliveries</li>
+          <li>Free Delivery Anywhere</li>
+          <li>24/7 VIP Support</li>
+        </ul>
+        <button class="btn" onclick="goToPayment('Premium Plan', '1999')">Subscribe</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function selectPlan(element, planName, price) {
+      // Deselect all plans
+      document.querySelectorAll('.plan').forEach(p => p.classList.remove('selected'));
+
+      // Select clicked one
+      element.classList.add('selected');
+    }
+
+    function goToPayment(planName, price) {
+      // Store selected plan in sessionStorage
+      sessionStorage.setItem('selectedPlan', planName);
+      sessionStorage.setItem('planPrice', price);
+      
+      // Redirect to payment page
+      window.location.href = '/payment.html';
+    }
+  </script>
+</body>
+</html>

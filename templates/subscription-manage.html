@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Subscription - Swift Serve</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7ca91;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    header {
+      background-color: #ff5722;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .subscription-details {
+      padding: 30px;
+    }
+
+    .no-subscription {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .no-subscription i {
+      font-size: 60px;
+      color: #ccc;
+      margin-bottom: 20px;
+    }
+
+    .subscription-card {
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .subscription-card h2 {
+      margin-top: 0;
+      color: #ff5722;
+      display: flex;
+      align-items: center;
+    }
+
+    .subscription-card h2 i {
+      margin-right: 10px;
+    }
+
+    .subscription-info {
+      margin: 20px 0;
+    }
+
+    .info-row {
+      display: flex;
+      margin-bottom: 15px;
+    }
+
+    .info-label {
+      font-weight: bold;
+      width: 140px;
+    }
+
+    .info-value {
+      flex: 1;
+    }
+
+    .active-badge {
+      background-color: #4CAF50;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #ff5722;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #e64a19;
+    }
+
+    .btn-danger {
+      background-color: #f44336;
+    }
+
+    .btn-danger:hover {
+      background-color: #d32f2f;
+    }
+
+    .actions {
+      margin-top: 30px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .benefits {
+      margin-top: 30px;
+    }
+
+    .benefits h3 {
+      color: #ff5722;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .benefits-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .benefits-list li {
+      margin-bottom: 10px;
+      padding-left: 30px;
+      position: relative;
+    }
+
+    .benefits-list li i {
+      position: absolute;
+      left: 0;
+      top: 2px;
+      color: #4CAF50;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .modal-actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Manage Your Subscription</h1>
+    </header>
+
+    <div class="subscription-details" id="subscription-container">
+      <div class="loading">
+        <p>Loading your subscription details...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Confirmation Modal -->
+  <div class="modal" id="cancel-modal">
+    <div class="modal-content">
+      <h2>Cancel Subscription?</h2>
+      <p>Are you sure you want to cancel your subscription? This will take effect immediately.</p>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeModal()">No, Keep It</button>
+        <button class="btn btn-danger" onclick="confirmCancelSubscription()">Yes, Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchSubscriptionDetails();
+    });
+
+    function fetchSubscriptionDetails() {
+      fetch('/api/subscriptions/user')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Not logged in or server error');
+          }
+          return response.json();
+        })
+        .then(data => {
+          const container = document.getElementById('subscription-container');
+          
+          if (data.success && data.subscription) {
+            // User has an active subscription
+            const subscription = data.subscription;
+            
+            // Format date
+            const startDate = new Date(subscription.start_date);
+            const formattedStartDate = startDate.toLocaleDateString('en-IN', { 
+              year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            
+            // Get benefits based on plan name
+            const benefits = getPlanBenefits(subscription.plan_name);
+            
+            container.innerHTML = `
+              <div class="subscription-card">
+                <h2><i class="ri-vip-crown-fill"></i> ${subscription.plan_name} <span class="active-badge">Active</span></h2>
+                
+                <div class="subscription-info">
+                  <div class="info-row">
+                    <div class="info-label">Price:</div>
+                    <div class="info-value">₹${subscription.plan_price}/month</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Start Date:</div>
+                    <div class="info-value">${formattedStartDate}</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Status:</div>
+                    <div class="info-value">Active</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Next Billing:</div>
+                    <div class="info-value">${getNextBillingDate(startDate)}</div>
+                  </div>
+                </div>
+                
+                <div class="benefits">
+                  <h3>Your Plan Benefits</h3>
+                  <ul class="benefits-list">
+                    ${benefits.map(benefit => `<li><i class="ri-check-line"></i> ${benefit}</li>`).join('')}
+                  </ul>
+                </div>
+                
+                <div class="actions">
+                  <a href="/subscription.html" class="btn">Change Plan</a>
+                  <button class="btn btn-danger" onclick="showCancelModal()">Cancel Subscription</button>
+                </div>
+              </div>
+            `;
+          } else {
+            // User doesn't have an active subscription
+            container.innerHTML = `
+              <div class="no-subscription">
+                <i class="ri-emotion-sad-line"></i>
+                <h2>No Active Subscription</h2>
+                <p>You don't have an active subscription plan. Subscribe now to enjoy exclusive benefits!</p>
+                <a href="/subscription.html" class="btn">View Plans</a>
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching subscription:', error);
+          document.getElementById('subscription-container').innerHTML = `
+            <div class="no-subscription">
+              <i class="ri-error-warning-line"></i>
+              <h2>Error Loading Subscription</h2>
+              <p>There was a problem loading your subscription details. Please try again later.</p>
+              <a href="/" class="btn">Go to Home</a>
+            </div>
+          `;
+        });
+    }
+
+    function getPlanBenefits(planName) {
+      // Return benefits based on plan name
+      if (planName === 'Basic Plan') {
+        return [
+          '10 Deliveries per month',
+          'Free Delivery within 5km',
+          'Standard Support',
+          'Regular menu access'
+        ];
+      } else if (planName === 'Healthy Plan') {
+        return [
+          '30 Deliveries per month',
+          'Free Delivery within 10km',
+          'Priority Support',
+          'Access to exclusive menu items',
+          'No surge pricing during peak hours'
+        ];
+      } else if (planName === 'Premium Plan') {
+        return [
+          'Unlimited Deliveries',
+          'Free Delivery Anywhere',
+          '24/7 VIP Support',
+          'Priority delivery during peak hours',
+          'Exclusive access to premium menu items',
+          'Special member promotions'
+        ];
+      } else {
+        return ['Exclusive member benefits', 'Priority service'];
+      }
+    }
+
+    function getNextBillingDate(startDate) {
+      // Calculate next billing date (one month from start date)
+      const nextBillingDate = new Date(startDate);
+      nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
+      
+      return nextBillingDate.toLocaleDateString('en-IN', { 
+        year: 'numeric', month: 'long', day: 'numeric' 
+      });
+    }
+
+    function showCancelModal() {
+      document.getElementById('cancel-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('cancel-modal').style.display = 'none';
+    }
+
+    function confirmCancelSubscription() {
+      // Send request to cancel subscription
+      fetch('/api/subscriptions/cancel', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Close modal and refresh subscription details
+          closeModal();
+          
+          // Show success message
+          const container = document.getElementById('subscription-container');
+          container.innerHTML = `
+            <div class="no-subscription">
+              <i class="ri-checkbox-circle-line" style="color: #4CAF50;"></i>
+              <h2>Subscription Cancelled</h2>
+              <p>Your subscription has been successfully cancelled. We hope to see you again soon!</p>
+              <a href="/subscription.html" class="btn">View Plans</a>
+            </div>
+          `;
+        } else {
+          alert('Failed to cancel subscription. Please try again.');
+          closeModal();
+        }
+      })
+      .catch(error => {
+        console.error('Error cancelling subscription:', error);
+        alert('An error occurred while cancelling your subscription. Please try again later.');
+        closeModal();
+      });
+    }
+  </script>
+</body>
+</html> 

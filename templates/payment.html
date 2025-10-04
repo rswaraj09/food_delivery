@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment - Swift Serve</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7ca91;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    header {
+      background-color: #ff5722;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .order-summary {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .plan-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .payment-methods {
+      padding: 20px;
+    }
+
+    .payment-tab {
+      display: flex;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      opacity: 0.6;
+      transition: all 0.3s;
+    }
+
+    .tab-btn.active {
+      border-bottom: 3px solid #ff5722;
+      opacity: 1;
+      font-weight: bold;
+    }
+
+    .payment-content {
+      padding: 10px 0;
+    }
+
+    .payment-form {
+      display: none;
+    }
+
+    .payment-form.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .card-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background-color: #ff5722;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #e64a19;
+    }
+
+    .upi-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .upi-option {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      width: calc(25% - 10px);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .upi-option:hover {
+      border-color: #ff5722;
+      transform: translateY(-3px);
+    }
+
+    .upi-option img {
+      max-width: 50px;
+      height: auto;
+    }
+
+    .upi-option p {
+      margin: 5px 0 0;
+      font-size: 12px;
+    }
+
+    .success-message {
+      display: none;
+      text-align: center;
+      padding: 50px 20px;
+    }
+
+    .success-message i {
+      font-size: 70px;
+      color: #4CAF50;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .card-details {
+        grid-template-columns: 1fr;
+      }
+
+      .upi-option {
+        width: calc(50% - 10px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Complete Your Payment</h1>
+    </header>
+
+    <div class="order-summary">
+      <h2>Order Summary</h2>
+      <div class="plan-details">
+        <span id="plan-name">Loading plan...</span>
+        <span id="plan-price">₹0.00</span>
+      </div>
+      <p>Subscription will renew automatically every month</p>
+    </div>
+
+    <div class="payment-methods">
+      <div class="payment-tab">
+        <button class="tab-btn active" data-tab="card">Credit/Debit Card</button>
+        <button class="tab-btn" data-tab="upi">UPI</button>
+        <button class="tab-btn" data-tab="netbanking">Net Banking</button>
+        <button class="tab-btn" data-tab="wallet">Wallet</button>
+      </div>
+
+      <div class="payment-content">
+        <!-- Credit Card Form -->
+        <div class="payment-form active" id="card-form">
+          <div class="form-group">
+            <label for="card-number">Card Number</label>
+            <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19">
+          </div>
+          <div class="form-group">
+            <label for="card-name">Cardholder Name</label>
+            <input type="text" id="card-name" placeholder="Name as on card">
+          </div>
+          <div class="card-details">
+            <div class="form-group">
+              <label for="expiry">Expiry Date</label>
+              <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+            </div>
+            <div class="form-group">
+              <label for="cvv">CVV</label>
+              <input type="password" id="cvv" placeholder="123" maxlength="3">
+            </div>
+          </div>
+          <button class="btn" onclick="processPayment()">Pay Now</button>
+        </div>
+
+        <!-- UPI Form -->
+        <div class="payment-form" id="upi-form">
+          <div class="form-group">
+            <label for="upi-id">UPI ID</label>
+            <input type="text" id="upi-id" placeholder="yourname@upi">
+          </div>
+          <p>Or choose a UPI app:</p>
+          <div class="upi-options">
+            <div class="upi-option" onclick="selectUpiApp('gpay')">
+              <img src="https://cdn-icons-png.flaticon.com/512/6124/6124998.png" alt="Google Pay">
+              <p>Google Pay</p>
+            </div>
+            <div class="upi-option" onclick="selectUpiApp('phonepe')">
+              <img src="https://cdn-icons-png.flaticon.com/512/825/825454.png" alt="PhonePe">
+              <p>PhonePe</p>
+            </div>
+            <div class="upi-option" onclick="selectUpiApp('paytm')">
+              <img src="https://cdn-icons-png.flaticon.com/512/825/825455.png" alt="Paytm">
+              <p>Paytm</p>
+            </div>
+            <div class="upi-option" onclick="selectUpiApp('amazonpay')">
+              <img src="https://cdn-icons-png.flaticon.com/512/5977/5977576.png" alt="Amazon Pay">
+              <p>Amazon Pay</p>
+            </div>
+          </div>
+          <button class="btn" onclick="processPayment()">Pay Now</button>
+        </div>
+
+        <!-- Net Banking Form -->
+        <div class="payment-form" id="netbanking-form">
+          <div class="form-group">
+            <label for="bank">Select Bank</label>
+            <select id="bank">
+              <option value="">Select a bank</option>
+              <option value="sbi">State Bank of India</option>
+              <option value="hdfc">HDFC Bank</option>
+              <option value="icici">ICICI Bank</option>
+              <option value="axis">Axis Bank</option>
+              <option value="kotak">Kotak Mahindra Bank</option>
+            </select>
+          </div>
+          <button class="btn" onclick="processPayment()">Pay Now</button>
+        </div>
+
+        <!-- Wallet Form -->
+        <div class="payment-form" id="wallet-form">
+          <div class="form-group">
+            <label for="wallet">Select Wallet</label>
+            <select id="wallet">
+              <option value="">Select a wallet</option>
+              <option value="paytm">Paytm</option>
+              <option value="phonepe">PhonePe</option>
+              <option value="amazonpay">Amazon Pay</option>
+              <option value="mobikwik">MobiKwik</option>
+            </select>
+          </div>
+          <button class="btn" onclick="processPayment()">Pay Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Message (Hidden Initially) -->
+    <div class="success-message" id="success-message">
+      <i class="ri-checkbox-circle-fill"></i>
+      <h2>Payment Successful!</h2>
+      <p>Your subscription has been activated. Thank you for choosing Swift Serve!</p>
+      <button class="btn" onclick="window.location.href = '/explorecode.html'">Return to Home</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load plan details from sessionStorage
+      const planName = sessionStorage.getItem('selectedPlan') || 'Basic Plan';
+      const planPrice = sessionStorage.getItem('planPrice') || '999';
+
+      // Update the DOM
+      document.getElementById('plan-name').textContent = planName;
+      document.getElementById('plan-price').textContent = `₹${planPrice}`;
+
+      // Tab switching
+      const tabButtons = document.querySelectorAll('.tab-btn');
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Remove active class from all buttons and forms
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          document.querySelectorAll('.payment-form').forEach(form => form.classList.remove('active'));
+
+          // Add active class to clicked button and corresponding form
+          this.classList.add('active');
+          document.getElementById(`${this.dataset.tab}-form`).classList.add('active');
+        });
+      });
+
+      // Format credit card number with spaces
+      const cardNumberInput = document.getElementById('card-number');
+      if (cardNumberInput) {
+        cardNumberInput.addEventListener('input', function(e) {
+          let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+          let formattedValue = '';
+          for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+              formattedValue += ' ';
+            }
+            formattedValue += value[i];
+          }
+          e.target.value = formattedValue;
+        });
+      }
+
+      // Format expiry date
+      const expiryInput = document.getElementById('expiry');
+      if (expiryInput) {
+        expiryInput.addEventListener('input', function(e) {
+          let value = e.target.value.replace(/\D/g, '');
+          if (value.length > 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+          }
+          e.target.value = value;
+        });
+      }
+    });
+
+    function selectUpiApp(app) {
+      // Highlight the selected UPI app
+      document.querySelectorAll('.upi-option').forEach(option => {
+        option.style.borderColor = '#ddd';
+        option.style.backgroundColor = 'transparent';
+      });
+      event.currentTarget.style.borderColor = '#ff5722';
+      event.currentTarget.style.backgroundColor = '#fff8f6';
+    }
+
+    function processPayment() {
+      // Show loading state
+      const btn = event.currentTarget;
+      const originalText = btn.textContent;
+      btn.textContent = 'Processing...';
+      btn.disabled = true;
+
+      // Get the active payment method
+      const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+      
+      // Get the plan details from the page
+      const planName = document.getElementById('plan-name').textContent;
+      const planPrice = document.getElementById('plan-price').textContent.replace('₹', '');
+      
+      // Create form data for the API request
+      const formData = new FormData();
+      formData.append('plan_name', planName);
+      formData.append('plan_price', planPrice);
+      formData.append('payment_method', activeTab);
+      
+      // Additional form data based on payment method
+      if (activeTab === 'card') {
+        formData.append('card_number', document.getElementById('card-number').value);
+        formData.append('card_name', document.getElementById('card-name').value);
+        formData.append('expiry', document.getElementById('expiry').value);
+      } else if (activeTab === 'upi') {
+        formData.append('upi_id', document.getElementById('upi-id').value);
+      } else if (activeTab === 'netbanking') {
+        formData.append('bank', document.getElementById('bank').value);
+      } else if (activeTab === 'wallet') {
+        formData.append('wallet', document.getElementById('wallet').value);
+      }
+
+      // Send the payment request to the server
+      fetch('/api/process-payment', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Hide payment content
+          document.querySelector('.order-summary').style.display = 'none';
+          document.querySelector('.payment-methods').style.display = 'none';
+
+          // Show success message
+          document.getElementById('success-message').style.display = 'block';
+
+          // Clear sessionStorage
+          sessionStorage.removeItem('selectedPlan');
+          sessionStorage.removeItem('planPrice');
+        } else {
+          // Show error
+          alert(`Payment failed: ${data.error || 'Unknown error'}`);
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      })
+      .catch(error => {
+        console.error('Error processing payment:', error);
+        alert('Payment processing failed. Please try again.');
+        btn.textContent = originalText;
+        btn.disabled = false;
+      });
+    }
+  </script>
+</body>
+</html> 

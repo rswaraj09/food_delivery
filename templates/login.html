@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swift Serve - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/swift.css">
+    <style>
+        .login-container {
+            max-width: 450px;
+            margin: 120px auto;
+            transform: translateX(-40px);
+            background: var(--bg-color-1);
+            box-shadow: var(--box-shadow);
+            border-radius: 10px;
+            padding: 3.5rem;
+            animation: fadeIn 0.5s ease;
+            border: 1px solid rgba(171, 104, 6, 0.1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px) translateX(-40px); }
+            to { opacity: 1; transform: translateY(0) translateX(-40px); }
+        }
+        
+        .login-container h1 {
+            text-align: center;
+            color: #ab6806;
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+        
+        .login-form {
+            animation: slideUp 0.4s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .login-form .inputBox {
+            margin-bottom: 1.8rem;
+        }
+        .login-form .inputBox input {
+            width: 100%;
+            padding: 1.2rem;
+            font-size: 1.6rem;
+            border-radius: 0.5rem;
+            background: var(--bg-color-2);
+            margin-top: 0.5rem;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .login-form .inputBox input:focus {
+            border-color: #ab6806;
+            box-shadow: 0 0 0 2px rgba(171, 104, 6, 0.1);
+        }
+        .login-form .remember {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+            color: var(--text-color-2);
+        }
+        .login-form .remember input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        .login-form .btn {
+            width: 100%;
+            text-align: center;
+            background: #ab6806;
+            color: #fff;
+            font-weight: 600;
+            padding: 1.2rem;
+            border-radius: 0.5rem;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,0.1);
+            border: none;
+            margin-top: 1rem;
+            margin-left: 0;
+        }
+        .login-form .btn:hover {
+            background: #d98c1d;
+            transform: translateY(-3px);
+            box-shadow: 0 0.4rem 0.8rem rgba(0,0,0,0.2);
+        }
+        .signup-link {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 1.6rem;
+            color: var(--text-color-2);
+        }
+        .signup-link a {
+            color: #ab6806;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .signup-link a:hover {
+            color: #d98c1d;
+            text-decoration: underline;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+            display: none;
+        }
+        
+        /* Tab styles */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 12px 24px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-weight: bold;
+            color: var(--text-color-2);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            color: #ab6806;
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #ab6806;
+        }
+        .tab:hover:not(.active) {
+            color: #d98c1d;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div class="page3">
+            <header class="header">
+                <a href="/index.html" class="logo"><i class="ri-restaurant-2-fill"></i> SWIFT SERVE</a>
+            </header>
+            
+            <div class="login-container">
+                <h1>Login</h1>
+                <div id="success-message" class="success-message"></div>
+                <div id="error-message" class="error-message" style="display: none; color: #fff; background-color: #e74c3c; text-align: center; margin-bottom: 1.5rem; font-size: 1.6rem; padding: 1rem; border-radius: 0.5rem;"></div>
+                
+                <!-- Tabs for user/business login -->
+                <div class="tabs">
+                    <button class="tab active" data-target="user-login">As a User</button>
+                    <button class="tab" data-target="business-login">As a Business</button>
+                </div>
+                
+                <!-- User Login Form -->
+                <div id="user-login" class="tab-content active">
+                    <form action="/api/login" method="POST" class="login-form">
+                        <input type="hidden" name="account_type" value="user">
+                        <div class="inputBox">
+                            <input type="email" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="password" name="password" placeholder="Password" required>
+                        </div>
+                        <div class="remember">
+                            <label><input type="checkbox" name="remember"> Remember Me</label>
+                        </div>
+                        <button type="submit" class="btn">Login</button>
+                        <div class="signup-link">
+                            <p>Don't have an account? <a href="/signup.html">Sign Up</a></p>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Business Login Form -->
+                <div id="business-login" class="tab-content">
+                    <form action="/api/login" method="POST" class="login-form">
+                        <input type="hidden" name="account_type" value="business">
+                        <div class="inputBox">
+                            <input type="email" name="email" placeholder="Business Email" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="password" name="password" placeholder="Password" required>
+                        </div>
+                        <div class="remember">
+                            <label><input type="checkbox" name="remember"> Remember Me</label>
+                        </div>
+                        <button type="submit" class="btn">Login</button>
+                        <div class="signup-link">
+                            <p>Don't have a business account? <a href="/signup.html?type=business">Register Business</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <section class="footer">
+                <div class="box-container">
+                    <div class="box">
+                        <h3>Quick Links</h3>
+                        <a href="/index.html"><i class="ri-home-5-fill"></i> Home</a>
+                        <a href="index.html#packages"><i class="ri-inbox-unarchive-fill"></i> Packages</a>
+                        <a href="index.html#services"><i class="ri-service-fill"></i> Services</a>
+                        <a href="index.html#pricing"><i class="ri-price-tag-3-fill"></i> Prices</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Contact Info</h3>
+                        <a href="tel:+919356360179"><i class="ri-contacts-fill"></i> +91-9356360179</a>
+                        <a href="mailto:swiftserver999@gmail.com"><i class="ri-mail-unread-fill"></i> swiftserver999@gmail.com</a>
+                        <a href="#"><i class="ri-map-pin-2-fill"></i> Mumbai, Raigad-410203</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Follow Us</h3>
+                        <a href="#"><i class="ri-facebook-circle-fill"></i> Facebook</a>
+                        <a href="#"><i class="ri-twitter-fill"></i> Twitter</a>
+                        <a href="#"><i class="ri-instagram-fill"></i> Instagram</a>
+                        <a href="#"><i class="ri-whatsapp-fill"></i> Whatsapp</a>
+                    </div>
+                </div>
+                
+                <div class="credit">
+                    <p>&copy; 2025 Swift Serve. All rights reserved.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and content
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to current tab and its content
+                    this.classList.add('active');
+                    const target = this.getAttribute('data-target');
+                    document.getElementById(target).classList.add('active');
+                    
+                    // Clear error message when switching tabs
+                    document.getElementById('error-message').style.display = 'none';
+                });
+            });
+            
+            // Check for error parameters in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const accountType = urlParams.get('type') || 'user';
+            
+            // Switch to the correct tab if specified
+            if (accountType === 'business') {
+                tabs[1].click(); // Click the business tab
+            }
+            
+            if (error) {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.style.display = 'block';
+                
+                switch(error) {
+                    case 'invalid_credentials':
+                        errorDiv.textContent = 'Invalid email or password. Please try again.';
+                        break;
+                    default:
+                        errorDiv.textContent = 'An error occurred. Please try again.';
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

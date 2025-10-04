@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swift Serve - Food Delivery</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/swift.css">
+    <script type="text/javascript" src="/static/js/script.js"></script>
+    <style>
+        /* Add any additional inline styles here if needed */
+        .btn {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Horizontal icons styling */
+        .icons-container {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .icons-container div, 
+        .icons-container a {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .icons-container div:hover, 
+        .icons-container a:hover {
+            color: #e67e22;
+            transform: scale(1.1);
+        }
+        
+        /* Ensure header doesn't take too much space */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 5%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+        }
+        
+        /* Improve image visibility */
+        .home .image img {
+            width: 100%;
+            object-fit: cover;
+        }
+        
+        /* Make navbar more compact */
+        .navbar {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .navbar a {
+            font-size: 1rem;
+            padding: 0.5rem 0.7rem;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar a:hover {
+            color: #e67e22;
+        }
+        
+        /* Make header responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem 2%;
+            }
+            
+            .navbar {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                width: 15rem;
+                background: #fff;
+                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+                display: none;
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .navbar.active {
+                display: flex;
+            }
+            
+            .navbar a {
+                display: block;
+                padding: 1rem;
+                border-bottom: 1px solid #eee;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div class="page3">
+            <header class="header">
+                <a href="#" class="logo"><i class="ri-restaurant-2-fill"></i> SWIFT SERVE</a>
+                
+                <div class="icons-container">
+                    <div id="share-btn" class="ri-share-fill"></div>
+                    <a href="/login.html" id="user-btn" class="ri-user-3-fill" title="User Account"></a>
+                    <div id="menu-btn" class="ri-menu-fill"></div>
+                </div>
+                
+                <nav class="navbar">
+                    <a href="#home">Home</a>
+                    <a href="#packages">Packages</a>
+                    <a href="#services">Services</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#review">Review</a>
+                    <a href="#blogs">Blogs</a>
+                </nav>
+            </header>
+            
+            <section class="home" id="home">
+                <div class="image">
+                    <img src="https://www.tastingtable.com/img/gallery/what-makes-restaurant-burgers-taste-different-from-homemade-burgers-upgrade/l-intro-1662064407.jpg" alt="Tasty Burger">
+                </div>
+                <div class="content1">
+                    <h1>Most Tasty Burger for You</h1>
+                    <p>Juicy, big, loaded with toppings of your choice 🍔🔥</p>
+                    <a href="/login.html" class="btn">Explore Now</a>
+                </div>
+            </section>
+            
+            <!-- Food Categories Sections -->
+            <!-- (Previous food sections remain the same) -->
+            
+            <section class="pricing" id="pricing">
+                <h1 class="heading">Our <span>Pricing</span></h1>
+                <div class="box-container">
+                    <div class="box">
+                        <h3>Basic Plan</h3>
+                        <p>Starter Plan (999rs/-month)</p>
+                        <ul>
+                            <li>Fast Food Combos</li>
+                            <li>1-Burger Meal Combo (149rs/-)</li>
+                            <li>1 Burger + Fries + Soft Drink</li>
+                            <li>2-Pizza Party Combo (399rs/-)</li>
+                            <li>1 Medium Pizza + 2 Drinks + Garlic Bread + Fried Chicken Wings</li>
+                            <li>3-Fried Chicken Combo (249rs/-)</li>
+                            <li>5 Chicken Wings + Fries + Dip</li>
+                        </ul>
+                        <a href="/login.html" class="btn">Choose Plan</a>
+                    </div>
+                    
+                    <div class="box">
+                        <h3>Healthy Plan</h3>
+                        <p>Healthy Meal Combos (1499rs/-month)</p>
+                        <ul>
+                            <li>1-Fitness Bowl Combo (149rs/-)</li>
+                            <li>1 Salad Bowl + Fresh Juice</li>
+                            <li>2-Vegan Delight (499rs/-)</li>
+                            <li>1 Vegan Wrap + Smoothie + Side Salad</li>
+                            <li>3-Protein Power Combo (699rs/-)</li>
+                            <li>Grilled Chicken + Brown Rice + Steamed Veggies</li>
+                            <li>10% discount on all meals</li>
+                        </ul>
+                        <a href="/login.html" class="btn">Choose Plan</a>
+                    </div>
+                    
+                    <div class="box">
+                        <h3>Premium Plan</h3>
+                        <p>Family, Friends and Party Packs (1,999rs/-month)</p>
+                        <ul>
+                            <li>1-Friends Feast (99rs/-)</li>
+                            <li>2 Large Pizzas + 1 Side + 4 Drinks</li>
+                            <li>2-Weekend Special (399rs/-)</li>
+                            <li>1 Large Pizza + 1 Pasta + 1 Dessert + 4 Drinks</li>
+                            <li>3-BBQ Party Pack (999rs/-)</li>
+                            <li>Grilled Chicken + 2 Sides + 6 Drinks</li>
+                            <li>Free delivery on all orders</li>
+                        </ul>
+                        <a href="/login.html" class="btn">Choose Plan</a>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Blogs Section -->
+            <!-- (Previous blogs section remains the same) -->
+            
+            <section class="footer">
+                <div class="box-container">
+                    <div class="box">
+                        <h3>Our Branches</h3>
+                        <a href="#"><i class="ri-map-pin-fill"></i> Mumbai</a>
+                        <a href="#"><i class="ri-map-pin-fill"></i> Delhi</a>
+                        <a href="#"><i class="ri-map-pin-fill"></i> Chennai</a>
+                        <a href="#"><i class="ri-map-pin-fill"></i> Kolkata</a>
+                        <a href="#"><i class="ri-map-pin-fill"></i> Lucknow</a>
+                    </div>
+                    
+                    <div class="box">
+                        <h3>Quick Links</h3>
+                        <a href="#home"><i class="ri-home-5-fill"></i> Home</a>
+                        <a href="#packages"><i class="ri-inbox-unarchive-fill"></i> Packages</a>
+                        <a href="#services"><i class="ri-service-fill"></i> Services</a>
+                        <a href="#pricing"><i class="ri-price-tag-3-fill"></i> Prices</a>
+                        <a href="#blogs"><i class="ri-blogger-fill"></i> Blogs</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Contact Info</h3>
+                        <a href="tel:+919356360179"><i class="ri-contacts-fill"></i> +91-9356360179</a>
+                        <a href="tel:+1234213234"><i class="ri-phone-fill"></i> +123-421-3234</a>
+                        <a href="mailto:sumitgupta9579@gmail.com"><i class="ri-mail-unread-fill"></i> sumitgupta9579@gmail.com</a>
+                        <a href="mailto:swiftserver999@gmail.com"><i class="ri-mail-unread-fill"></i> swiftserver999@gmail.com</a>
+                        <a href="#"><i class="ri-map-pin-2-fill"></i> Mumbai, Raigad-410203</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Follow Us</h3>
+                        <a href="#"><i class="ri-facebook-circle-fill"></i> Facebook</a>
+                        <a href="#"><i class="ri-twitter-fill"></i> Twitter</a>
+                        <a href="#"><i class="ri-instagram-fill"></i> Instagram</a>
+                        <a href="#"><i class="ri-linkedin-box-fill"></i> Linkedin</a>
+                        <a href="#"><i class="ri-pinterest-fill"></i> Pinterest</a>
+                        <a href="#"><i class="ri-whatsapp-fill"></i> Whatsapp</a>
+                    </div>
+                </div>
+                
+                <div class="credit">
+                    <p>&copy; 2025 Swift Serve. All rights reserved.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <script>
+        // Improved JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            fetch('/api/user-data')
+                .then(response => {
+                    if (response.ok) {
+                        // User is logged in, update the user button to go to the user panel
+                        document.querySelector('#user-btn').href = 'user-panel.html';
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.log('Not logged in');
+                });
+                
+            // Navbar toggle
+            let navbar = document.querySelector('.navbar');
+            document.querySelector('#menu-btn').addEventListener('click', () => {
+                navbar.classList.toggle('active');
+            });
+            
+            // User button functionality
+            document.querySelector('#user-btn').addEventListener('click', function(e) {
+                // The link will handle navigation, no need for additional logic
+            });
+            
+            // Share button functionality
+            document.querySelector('#share-btn').addEventListener('click', () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Swift Serve',
+                        text: 'Check out this amazing food delivery service!',
+                        url: window.location.href
+                    }).catch(err => {
+                        console.log('Error sharing:', err);
+                    });
+                } else {
+                    alert('Web Share API not supported in your browser');
+                }
+            });
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swift Serve - Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/swift.css">
+    <style>
+        .signup-container {
+            max-width: 500px;
+            margin: 120px auto;
+            background: var(--bg-color-1);
+            box-shadow: var(--box-shadow);
+            border-radius: 10px;
+            padding: 2rem;
+        }
+        .signup-container h1 {
+            text-align: center;
+            color: var(--text-color-1);
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+        .signup-form .inputBox {
+            margin-bottom: 1.5rem;
+        }
+        .signup-form .inputBox input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.6rem;
+            border-radius: 0.5rem;
+            background: var(--bg-color-2);
+            margin-top: 0.5rem;
+        }
+        .signup-form .terms {
+            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+            color: var(--text-color-2);
+        }
+        .signup-form .btn {
+            width: 100%;
+            text-align: center;
+        }
+        .login-link {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 1.6rem;
+            color: var(--text-color-2);
+        }
+        .login-link a {
+            color: var(--orange);
+            font-weight: bold;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        .student-option {
+            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+            color: var(--text-color-2);
+            background-color: var(--bg-color-2);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--orange);
+        }
+        .student-option-header {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--orange);
+        }
+        .student-option-header i {
+            margin-right: 0.5rem;
+            font-size: 2rem;
+        }
+        .student-id-upload {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .student-discount-info {
+            font-size: 1.4rem;
+            color: var(--orange);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        .file-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-top: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+        /* Tab styles */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-weight: bold;
+            color: var(--text-color-2);
+            position: relative;
+        }
+        .tab.active {
+            color: var(--orange);
+        }
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--orange);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div class="page3">
+            <header class="header">
+                <a href="index.html" class="logo"><i class="ri-restaurant-2-fill"></i> SWIFT SERVE</a>
+            </header>
+            
+            <div class="signup-container">
+                <h1>Sign Up</h1>
+                <div id="error-message" class="error-message" style="display: none; color: #ff3333; text-align: center; margin-bottom: 1.5rem; font-size: 1.6rem;"></div>
+                
+                <!-- Tabs for user/business signup -->
+                <div class="tabs">
+                    <button class="tab active" data-target="user-signup">As a User</button>
+                    <button class="tab" data-target="business-signup">As a Business</button>
+                </div>
+                
+                <!-- User Signup Form -->
+                <div id="user-signup" class="tab-content active">
+                    <form action="/api/signup" method="POST" class="signup-form" id="user-signup-form" enctype="multipart/form-data">
+                        <input type="hidden" name="account_type" value="user">
+                        <div class="inputBox">
+                            <input type="text" name="name" placeholder="Full Name" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="email" name="email" placeholder="Email" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="tel" name="phone" placeholder="Phone Number" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="password" name="password" id="user-password" placeholder="Password" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="password" name="confirm_password" id="user-confirm-password" placeholder="Confirm Password" required>
+                        </div>
+                        
+                        <div class="student-option">
+                            <div class="student-option-header">
+                                <i class="ri-graduation-cap-fill"></i> STUDENT DISCOUNT OPTION
+                            </div>
+                            <label>
+                                <input type="checkbox" name="is_student" id="is_student"> I am a student (50% discount on all orders)
+                            </label>
+                            <div class="student-id-upload" id="student-id-upload" style="display: none;">
+                                <div class="inputBox">
+                                    <label for="student_id_card" style="display: block; margin-bottom: 0.5rem;">Upload your student ID card:</label>
+                                    <div style="display: flex; align-items: center;">
+                                        <input type="file" name="student_id_card" id="student_id_card" accept="image/*,.pdf" style="display: none;">
+                                        <button type="button" onclick="document.getElementById('student_id_card').click();" style="background-color: var(--orange); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 0.5rem; cursor: pointer; margin-right: 1rem;">
+                                            <i class="ri-upload-2-fill"></i> Choose File
+                                        </button>
+                                        <span id="file-name-display" style="font-size: 1.4rem;">No file chosen</span>
+                                    </div>
+                                </div>
+                                <div class="student-discount-info">
+                                    <i class="ri-information-line"></i> Upload your valid student ID card to receive 50% discount on all food orders after verification
+                                </div>
+                                <div id="file-preview-container" style="margin-top: 1rem; display: none;">
+                                    <p style="font-size: 1.4rem; margin-bottom: 0.5rem;">Preview:</p>
+                                    <img id="file-preview" class="file-preview" src="#" alt="Student ID Preview">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="terms">
+                            <label><input type="checkbox" name="terms" required> I agree to the Terms & Conditions</label>
+                        </div>
+                        <button type="submit" class="btn">Sign Up as User</button>
+                        <div class="login-link">
+                            <p>Already have an account? <a href="login.html">Login</a></p>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Business Signup Form -->
+                <div id="business-signup" class="tab-content">
+                    <form action="/api/business-signup" method="POST" class="signup-form" id="business-signup-form">
+                        <input type="hidden" name="account_type" value="business">
+                        <div class="inputBox">
+                            <input type="text" name="business_name" placeholder="Business Name" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="text" name="owner_name" placeholder="Owner Name" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="email" name="email" placeholder="Business Email" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="tel" name="phone" placeholder="Business Phone" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="text" name="address" placeholder="Business Address" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="text" name="business_type" placeholder="Type of Business (Restaurant, Cafe, etc.)" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="password" name="password" id="business-password" placeholder="Password" required>
+                        </div>
+                        <div class="inputBox">
+                            <input type="password" name="confirm_password" id="business-confirm-password" placeholder="Confirm Password" required>
+                        </div>
+                        <div class="terms">
+                            <label><input type="checkbox" name="terms" required> I agree to the Terms & Conditions</label>
+                        </div>
+                        <button type="submit" class="btn">Sign Up as Business</button>
+                        <div class="login-link">
+                            <p>Already have a business account? <a href="login.html">Login</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <section class="footer">
+                <div class="box-container">
+                    <div class="box">
+                        <h3>Quick Links</h3>
+                        <a href="index.html"><i class="ri-home-5-fill"></i> Home</a>
+                        <a href="index.html#packages"><i class="ri-inbox-unarchive-fill"></i> Packages</a>
+                        <a href="index.html#services"><i class="ri-service-fill"></i> Services</a>
+                        <a href="index.html#pricing"><i class="ri-price-tag-3-fill"></i> Prices</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Contact Info</h3>
+                        <a href="tel:+919356360179"><i class="ri-contacts-fill"></i> +91-9356360179</a>
+                        <a href="mailto:swiftserver999@gmail.com"><i class="ri-mail-unread-fill"></i> swiftserver999@gmail.com</a>
+                        <a href="#"><i class="ri-map-pin-2-fill"></i> Mumbai, Raigad-410203</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Follow Us</h3>
+                        <a href="#"><i class="ri-facebook-circle-fill"></i> Facebook</a>
+                        <a href="#"><i class="ri-twitter-fill"></i> Twitter</a>
+                        <a href="#"><i class="ri-instagram-fill"></i> Instagram</a>
+                        <a href="#"><i class="ri-whatsapp-fill"></i> Whatsapp</a>
+                    </div>
+                </div>
+                
+                <div class="credit">
+                    <p>&copy; 2025 Swift Serve. All rights reserved.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs and content
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to current tab and its content
+                    this.classList.add('active');
+                    const target = this.getAttribute('data-target');
+                    document.getElementById(target).classList.add('active');
+                    
+                    // Clear error message when switching tabs
+                    document.getElementById('error-message').style.display = 'none';
+                });
+            });
+            
+            // Check for error parameters in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const accountType = urlParams.get('type') || 'user';
+            
+            // Switch to the correct tab if specified
+            if (accountType === 'business') {
+                tabs[1].click(); // Click the business tab
+            }
+            
+            if (error) {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.style.display = 'block';
+                
+                switch(error) {
+                    case 'email_exists':
+                        errorDiv.textContent = 'This email is already registered. Please use a different email or login.';
+                        break;
+                    case 'password_mismatch':
+                        errorDiv.textContent = 'Passwords do not match. Please try again.';
+                        break;
+                    case 'missing_fields':
+                        errorDiv.textContent = 'Please fill in all required fields.';
+                        break;
+                    case 'db_error':
+                        errorDiv.textContent = 'Database error occurred. Please try again later or contact support.';
+                        break;
+                    default:
+                        errorDiv.textContent = 'An error occurred. Please try again.';
+                        break;
+                }
+            }
+            
+            // Form validation for user form
+            const userForm = document.getElementById('user-signup-form');
+            userForm.addEventListener('submit', function(event) {
+                const password = document.getElementById('user-password').value;
+                const confirmPassword = document.getElementById('user-confirm-password').value;
+                
+                if (password !== confirmPassword) {
+                    event.preventDefault();
+                    const errorDiv = document.getElementById('error-message');
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = 'Passwords do not match. Please try again.';
+                }
+                
+                // Check if student checkbox is checked but no file is selected
+                const isStudent = document.getElementById('is_student').checked;
+                const studentIdFile = document.getElementById('student_id_card').files[0];
+                
+                if (isStudent && !studentIdFile) {
+                    const proceed = confirm('You have selected the student option but have not uploaded a student ID card. Without ID verification, you will not receive the 50% discount. Do you want to continue?');
+                    if (!proceed) {
+                        event.preventDefault();
+                    }
+                }
+            });
+            
+            // Form validation for business form
+            const businessForm = document.getElementById('business-signup-form');
+            businessForm.addEventListener('submit', function(event) {
+                const password = document.getElementById('business-password').value;
+                const confirmPassword = document.getElementById('business-confirm-password').value;
+                
+                if (password !== confirmPassword) {
+                    event.preventDefault();
+                    const errorDiv = document.getElementById('error-message');
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = 'Passwords do not match. Please try again.';
+                }
+            });
+            
+            // Student ID card upload toggle
+            const isStudentCheckbox = document.getElementById('is_student');
+            const studentIdUpload = document.getElementById('student-id-upload');
+            
+            isStudentCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    studentIdUpload.style.display = 'block';
+                } else {
+                    studentIdUpload.style.display = 'none';
+                    // Clear the file input when unchecking
+                    document.getElementById('student_id_card').value = '';
+                    document.getElementById('file-name-display').textContent = 'No file chosen';
+                    document.getElementById('file-preview-container').style.display = 'none';
+                }
+            });
+            
+            // Display selected filename
+            const fileInput = document.getElementById('student_id_card');
+            const fileNameDisplay = document.getElementById('file-name-display');
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    fileNameDisplay.textContent = this.files[0].name;
+                    fileNameDisplay.style.color = 'var(--green)';
+                    
+                    // Preview image if possible
+                    if (this.files[0].type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const preview = document.getElementById('file-preview');
+                            preview.src = e.target.result;
+                            preview.style.display = 'block';
+                            document.getElementById('file-preview-container').style.display = 'block';
+                        }
+                        reader.readAsDataURL(this.files[0]);
+                    } else {
+                        // Hide preview for non-image files (like PDFs)
+                        document.getElementById('file-preview-container').style.display = 'none';
+                    }
+                } else {
+                    fileNameDisplay.textContent = 'No file chosen';
+                    fileNameDisplay.style.color = '';
+                    document.getElementById('file-preview-container').style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

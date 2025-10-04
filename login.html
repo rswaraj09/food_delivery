@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swift Serve - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="swift.css">
+    <style>
+        .login-container {
+            max-width: 500px;
+            margin: 150px auto;
+            background: var(--bg-color-1);
+            box-shadow: var(--box-shadow);
+            border-radius: 10px;
+            padding: 2rem;
+        }
+        .login-container h1 {
+            text-align: center;
+            color: var(--text-color-1);
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+        .login-form .inputBox {
+            margin-bottom: 1.5rem;
+        }
+        .login-form .inputBox input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.6rem;
+            border-radius: 0.5rem;
+            background: var(--bg-color-2);
+            margin-top: 0.5rem;
+        }
+        .login-form .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            font-size: 1.6rem;
+            color: var(--text-color-2);
+        }
+        .login-form .btn {
+            width: 100%;
+            text-align: center;
+        }
+        .register-link {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 1.6rem;
+            color: var(--text-color-2);
+        }
+        .register-link a {
+            color: var(--orange);
+            font-weight: bold;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div class="page3">
+            <header class="header">
+                <a href="index.html" class="logo"><i class="ri-restaurant-2-fill"></i> SWIFT SERVE</a>
+            </header>
+            
+            <div class="login-container">
+                <h1>Login</h1>
+                <div id="error-message" class="error-message" style="display: none; color: #ff3333; text-align: center; margin-bottom: 1.5rem; font-size: 1.6rem;"></div>
+                <form action="/api/login" method="POST" class="login-form">
+                    <div class="inputBox">
+                        <input type="email" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="inputBox">
+                        <input type="password" name="password" placeholder="Password" required>
+                    </div>
+                    <div class="remember-forgot">
+                        <label><input type="checkbox" name="remember"> Remember me</label>
+                        <a href="forgot-password.html">Forgot Password?</a>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                    <div class="register-link">
+                        <p>Don't have an account? <a href="signup.html">Register Now</a></p>
+                    </div>
+                </form>
+            </div>
+            
+            <section class="footer">
+                <div class="box-container">
+                    <div class="box">
+                        <h3>Quick Links</h3>
+                        <a href="index.html"><i class="ri-home-5-fill"></i> Home</a>
+                        <a href="index.html#packages"><i class="ri-inbox-unarchive-fill"></i> Packages</a>
+                        <a href="index.html#services"><i class="ri-service-fill"></i> Services</a>
+                        <a href="index.html#pricing"><i class="ri-price-tag-3-fill"></i> Prices</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Contact Info</h3>
+                        <a href="tel:+919356360179"><i class="ri-contacts-fill"></i> +91-9356360179</a>
+                        <a href="mailto:swiftserver999@gmail.com"><i class="ri-mail-unread-fill"></i> swiftserver999@gmail.com</a>
+                        <a href="#"><i class="ri-map-pin-2-fill"></i> Mumbai, Raigad-410203</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Follow Us</h3>
+                        <a href="#"><i class="ri-facebook-circle-fill"></i> Facebook</a>
+                        <a href="#"><i class="ri-twitter-fill"></i> Twitter</a>
+                        <a href="#"><i class="ri-instagram-fill"></i> Instagram</a>
+                        <a href="#"><i class="ri-whatsapp-fill"></i> Whatsapp</a>
+                    </div>
+                </div>
+                
+                <div class="credit">
+                    <p>&copy; 2025 Swift Serve. All rights reserved.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for error parameters in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            
+            if (error) {
+                const errorDiv = document.getElementById('error-message');
+                errorDiv.style.display = 'block';
+                
+                switch(error) {
+                    case 'invalid_credentials':
+                        errorDiv.textContent = 'Invalid email or password. Please try again.';
+                        break;
+                    case 'not_logged_in':
+                        errorDiv.textContent = 'Please log in to access this page.';
+                        break;
+                    default:
+                        errorDiv.textContent = 'An error occurred. Please try again.';
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

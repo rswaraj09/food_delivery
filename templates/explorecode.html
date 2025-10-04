@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Explore Food - Swift Serve</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7ca91;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #ff5722;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .search-container {
+      margin: 15px auto;
+      max-width: 600px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .search-input {
+      padding: 10px 15px;
+      border-radius: 6px 0 0 6px;
+      border: none;
+      width: 70%;
+      font-size: 16px;
+    }
+
+    .search-btn {
+      padding: 10px 15px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 0 6px 6px 0;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .search-btn:hover {
+      background-color: #218838;
+    }
+
+    .food-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .food-card {
+      background: #fff;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .food-card:hover {
+      transform: scale(1.02);
+    }
+
+    .image-container {
+      position: relative;
+      width: 100%;
+      padding-top: 100%; /* Creates a square container */
+      overflow: hidden;
+    }
+
+    .image-container img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .food-info {
+      padding: 15px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .food-info h4 {
+      margin: 0 0 8px;
+    }
+
+    .restaurant-name {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .rating {
+      color: #f39c12;
+      font-size: 14px;
+    }
+
+    .price {
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .order-btn {
+      margin-top: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .order-btn:hover {
+      background-color: #218838;
+    }
+
+    .order-btn a {
+      color: white;
+      text-decoration: none;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 50px;
+      font-size: 18px;
+      color: #666;
+    }
+
+    .no-items {
+      text-align: center;
+      padding: 50px;
+      font-size: 18px;
+      color: #666;
+    }
+
+    .default-img {
+      background-color: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    .default-img img {
+      opacity: 0.7;
+    }
+
+    .image-container.default-img::after {
+      content: 'No Image Available';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #666;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .food-info h4 {
+        font-size: 16px;
+      }
+    }
+
+    /* Make sure cards maintain their aspect ratio properly */
+    @media (min-width: 768px) {
+      .food-container {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (min-width: 992px) {
+      .food-container {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .nav-links {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .nav-link {
+      color: white;
+      text-decoration: none;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .nav-link:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Explore Delicious Foods</h1>
+    <p>Pick your favorite meal and order instantly!</p>
+    <div class="search-container">
+      <input type="text" class="search-input" id="search-input" placeholder="Search foods...">
+      <button class="search-btn" id="search-btn">Search</button>
+    </div>
+    <div class="nav-links">
+      <a href="/explorecode.html" class="nav-link">Home</a>
+      <a href="/subscription.html" class="nav-link">Subscriptions</a>
+      <a href="/subscription-manage.html" class="nav-link">Manage Subscription</a>
+    </div>
+  </header>
+
+  <div class="food-container" id="menu-items-container">
+    <div class="loader">Loading menu items...</div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const container = document.getElementById('menu-items-container');
+      const searchInput = document.getElementById('search-input');
+      const searchBtn = document.getElementById('search-btn');
+      let allMenuItems = []; // Store all menu items for search functionality
+      
+      // Fetch all menu items from the API
+      fetch('/api/all-menu-items')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch menu items');
+          }
+          return response.json();
+        })
+        .then(items => {
+          // Clear the loading message
+          container.innerHTML = '';
+          
+          if (items.length === 0) {
+            container.innerHTML = '<div class="no-items">No menu items available yet. Check back soon!</div>';
+            return;
+          }
+          
+          // Store the items for search functionality
+          allMenuItems = items;
+          
+          // Create and append food cards for each menu item
+          displayMenuItems(items);
+        })
+        .catch(error => {
+          console.error('Error fetching menu items:', error);
+          container.innerHTML = '<div class="no-items">Error loading menu items. Please try again later.</div>';
+        });
+      
+      // Search functionality
+      searchBtn.addEventListener('click', performSearch);
+      searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          performSearch();
+        }
+      });
+      
+      function performSearch() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        
+        if (searchTerm === '') {
+          // If search is empty, show all items
+          displayMenuItems(allMenuItems);
+          return;
+        }
+        
+        // Filter items based on search term
+        const filteredItems = allMenuItems.filter(item => {
+          return item.item_name.toLowerCase().includes(searchTerm) || 
+                 item.business_name.toLowerCase().includes(searchTerm);
+        });
+        
+        // Display filtered results
+        if (filteredItems.length === 0) {
+          container.innerHTML = '<div class="no-items">No matching items found. Try a different search term.</div>';
+        } else {
+          displayMenuItems(filteredItems);
+        }
+      }
+      
+      // Function to display menu items
+      function displayMenuItems(items) {
+        container.innerHTML = '';
+        items.forEach(item => {
+          const foodCard = createFoodCard(item);
+          container.appendChild(foodCard);
+        });
+      }
+      
+      // Function to create a food card element
+      function createFoodCard(item) {
+        const card = document.createElement('div');
+        card.className = 'food-card';
+        
+        // Generate random rating for demo purposes (in a real app, this would come from the database)
+        const rating = (Math.random() * 2 + 3).toFixed(1); // Random number between 3.0 and 5.0
+        const stars = generateStarRating(rating);
+        
+        // Format price to display 2 decimal places if needed
+        const formattedPrice = parseFloat(item.price).toFixed(2);
+        
+        // Define placeholder image for items without an image_url
+        const imageUrl = item.image_url || 'https://via.placeholder.com/400x400?text=No+Image+Available';
+        
+        // Create HTML for the card
+        card.innerHTML = `
+          <div class="image-container ${!item.image_url ? 'default-img' : ''}">
+            <img src="${imageUrl}" alt="${item.item_name}" onerror="this.src='https://via.placeholder.com/400x400?text=Image+Not+Available'; this.parentElement.classList.add('default-img');">
+    </div>
+      <div class="food-info">
+            <div class="restaurant-name">From: ${item.business_name}</div>
+            <h4>${item.item_name}</h4>
+            <div class="rating">${stars} (${rating})</div>
+            <div class="price">₹${formattedPrice}</div>
+            <button class="order-btn" data-item-id="${item.id}"><a href="/ordernowcode.html?item=${item.id}">Order Now</a></button>
+      </div>
+        `;
+        
+        return card;
+      }
+      
+      // Function to generate star rating HTML
+      function generateStarRating(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        let starsHtml = '';
+        
+        // Add full stars
+        for (let i = 0; i < fullStars; i++) {
+          starsHtml += '⭐';
+        }
+        
+        // Add half star if needed
+        if (hasHalfStar) {
+          starsHtml += '⭐'; // In this simple example we use full star, but in a real app you'd use a half-star icon
+        }
+        
+        // Add empty stars
+        for (let i = 0; i < emptyStars; i++) {
+          starsHtml += '☆';
+        }
+        
+        return starsHtml;
+      }
+    });
+  </script>
+</body>
+</html>

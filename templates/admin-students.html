@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Student Verification</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="../swift.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 120px auto;
+            background: var(--bg-color-1);
+            box-shadow: var(--box-shadow);
+            border-radius: 10px;
+            padding: 2rem;
+        }
+        .admin-container h1 {
+            text-align: center;
+            color: var(--text-color-1);
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+        .verification-requests {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .verification-requests th, 
+        .verification-requests td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--bg-color-2);
+            font-size: 1.6rem;
+        }
+        .verification-requests th {
+            background-color: var(--bg-color-2);
+            color: var(--text-color-1);
+            font-weight: bold;
+        }
+        .verification-requests tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .btn-approve {
+            background-color: var(--green);
+            color: green;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.4rem;
+        }
+        .btn-reject {
+            background-color: #ff3333;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.4rem;
+            margin-left: 0.5rem;
+        }
+        .id-preview {
+            max-width: 150px;
+            max-height: 100px;
+            object-fit: contain;
+            cursor: pointer;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.8rem;
+            color: var(--text-color-2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        .modal-content {
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+        }
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+        }
+        .close {
+            color: #fff;
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            font-size: 4rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <header class="header">
+            <a href="index.html" class="logo"><i class="ri-restaurant-2-fill"></i> SWIFT SERVE</a>
+            <a href="business-dashboard.html" class="btn">Back to Dashboard</a>
+        </header>
+        
+        <div class="admin-container">
+            <h1>Student ID Verification</h1>
+            
+            <div id="verification-list">
+                <table class="verification-requests">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>ID Card</th>
+                            <th>Date Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="verification-tbody">
+                        <!-- Will be populated dynamically -->
+                    </tbody>
+                </table>
+                
+                <div id="empty-message" class="empty-message" style="display: none;">
+                    <p>No pending student verification requests.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Image Preview Modal -->
+        <div id="image-modal" class="modal">
+            <span class="close">&times;</span>
+            <div class="modal-content">
+                <img id="modal-image" class="modal-image" src="" alt="Student ID Card">
+            </div>
+        </div>
+        
+        <section class="footer">
+            <div class="box-container">
+                <div class="box">
+                    <h3>Quick Links</h3>
+                    <a href="index.html"><i class="ri-home-5-fill"></i> Home</a>
+                    <a href="business-dashboard.html"><i class="ri-dashboard-line"></i> Dashboard</a>
+                </div>
+                
+                <div class="box">
+                    <h3>Contact Info</h3>
+                    <a href="tel:+919356360179"><i class="ri-contacts-fill"></i> +91-9356360179</a>
+                    <a href="mailto:swiftserver999@gmail.com"><i class="ri-mail-unread-fill"></i> swiftserver999@gmail.com</a>
+                    <a href="#"><i class="ri-map-pin-2-fill"></i> Mumbai, Raigad-410203</a>
+                </div>
+            </div>
+            
+            <div class="credit">
+                <p>&copy; 2025 Swift Serve. All rights reserved.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load verification requests
+            loadVerificationRequests();
+            
+            // Modal handling
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-image');
+            const closeBtn = document.getElementsByClassName('close')[0];
+            
+            // When the user clicks on the close button, close the modal
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            // When the user clicks anywhere outside of the modal content, close it
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        });
+        
+        function loadVerificationRequests() {
+            fetch('/api/admin/student-verification-requests')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Unauthorized access');
+                    }
+                    return response.json();
+                })
+                .then(requests => {
+                    const tbody = document.getElementById('verification-tbody');
+                    const emptyMessage = document.getElementById('empty-message');
+                    
+                    if (requests.length === 0) {
+                        tbody.innerHTML = '';
+                        emptyMessage.style.display = 'block';
+                        return;
+                    }
+                    
+                    emptyMessage.style.display = 'none';
+                    tbody.innerHTML = '';
+                    
+                    requests.forEach(request => {
+                        const row = document.createElement('tr');
+                        
+                        // Format date
+                        let submittedDate = new Date(request.created_at);
+                        let formattedDate = submittedDate.toLocaleDateString() + ' ' + 
+                                            submittedDate.toLocaleTimeString();
+                        
+                        row.innerHTML = `
+                            <td>${request.name}</td>
+                            <td>${request.email}</td>
+                            <td>${request.phone || 'N/A'}</td>
+                            <td>
+                                <img src="../${request.student_id_card}" alt="Student ID" class="id-preview" 
+                                     onclick="openModal('../${request.student_id_card}')">
+                            </td>
+                            <td>${formattedDate}</td>
+                            <td>
+                                <button class="btn-approve" onclick="verifyStudent(${request.id}, true)">Approve</button>
+                                <button class="btn-reject" onclick="verifyStudent(${request.id}, false)">Reject</button>
+                            </td>
+                        `;
+                        
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading verification requests:', error);
+                    // Redirect to login if unauthorized
+                    if (error.message === 'Unauthorized access') {
+                        window.location.href = '/login.html';
+                    }
+                });
+        }
+        
+        function openModal(imageSrc) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-image');
+            
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+        }
+        
+        function verifyStudent(userId, approved) {
+            const formData = new FormData();
+            formData.append('verified', approved);
+            
+            // Show verification in progress
+            const statusMsg = approved ? "Verifying student..." : "Rejecting verification...";
+            alert(statusMsg);
+            
+            fetch(`/api/admin/verify-student/${userId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Reload the list after successful verification
+                    loadVerificationRequests();
+                    
+                    if (approved) {
+                        alert('Student verified successfully. 50% discount enabled on all orders.');
+                        
+                        // Force refresh business orders to see updated prices
+                        fetch('/api/business/orders', { method: 'GET' })
+                            .catch(err => console.log('Error refreshing orders', err));
+                    } else {
+                        alert('Student verification rejected.');
+                    }
+                } else {
+                    alert('Error: ' + data.error);
+                    console.error('Verification error:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error verifying student:', error);
+                
+                const retryVerification = confirm(`Error processing your request: ${error.message}. Would you like to try again?`);
+                
+                if (retryVerification) {
+                    // Wait a moment then retry
+                    setTimeout(() => verifyStudent(userId, approved), 1000);
+                } else {
+                    alert('Verification process was not completed. You can try again later.');
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

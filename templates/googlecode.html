@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign in - GoogleFood</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background-color: #fff;
+    }
+
+    body {
+      background-color: #f2f2f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #202124;
+      background:linear-gradient(120deg,#2980b9,#8e44ad);
+
+    }
+
+    .container {
+      width: 100%;
+      max-width: 400px;
+      padding: 40px;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 75px;
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 400;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      font-size: 14px;
+      color: #5f6368;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e0deda;
+      border-radius: 4px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #4285f4;
+      box-shadow: 0 0 0 1px #4285f4;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 24px;
+      background-color: #f79f1f;
+      color: #f79f1f;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color:#f79f1f;
+      letter-spacing: 0.2rem;
+    }
+
+    a {
+      color: #1a73e8;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 12px;
+      text-align: center;
+      color: #68675f;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_92x30dp.png" alt="Google Logo">
+    </div>
+    <h2>Sign in</h2>
+    <p class="subtitle">to continue to GoogleFood</p>
+
+    <form>
+      <div class="form-group">
+        <input type="email" placeholder="Email or phone" required />
+      </div>
+      <div class="form-group">
+        <input type="password" placeholder="Enter your password" required />
+      </div>
+      <div class="actions">
+        <a href="/forget.html">Forgot password?</a>
+        <button type="submit" class="btn"> <a href="/otp.html"> Next </a></button>
+      </div>
+    </form>
+
+    <div class="footer">
+      <p>Not your device? Use Guest mode to sign in privately.</p>
+      <p><a href="/sign.html">Learn more</a></p>
+    </div>
+  </div>
+</body>
+</html>

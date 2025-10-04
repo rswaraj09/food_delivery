@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Facebook - Log In</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+      background:linear-gradient(120deg,#2980b9,#8e44ad);
+
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .login-box {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 360px;
+    }
+    .login-box h1 {
+      color: #1877f2;
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border: 1px solid #dddfe2;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background-color: #1877f2;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .login-box a {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      color: #1877f2;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .create-account {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .create-account button {
+      background-color: #42b72a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="login-box">
+      <h1>Facebook</h1>
+      <input type="text" placeholder="Email or Phone Number" />
+        <i class="ri-user-3-fill"></i>
+      <input type="password" placeholder="Password" />
+        <i class="ri-lock-fill"></i>
+      <button>Log In</button>
+      <a href="/forget.html">Forgotten password?</a>
+      <div class="create-account">
+        <button><a href="/sign.html">Create New Account</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

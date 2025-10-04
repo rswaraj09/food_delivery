@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Detailed Order Tracking - Swift Serve</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- OpenStreetMap Leaflet CSS and JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7ca91;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background-color: #ff5722;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+
+    .order-info {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .order-info h2 {
+      color: #ff5722;
+      margin-bottom: 10px;
+    }
+
+    .top-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .order-summary {
+      flex: 1;
+      min-width: 300px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 10px;
+    }
+
+    .delivery-info {
+      flex: 1;
+      min-width: 300px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 10px;
+    }
+
+    .tracking-map-container {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .delivery-map {
+      width: 100%;
+      height: 500px;
+      background: #eee;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .detail-group {
+      margin-bottom: 15px;
+    }
+
+    .detail-label {
+      font-weight: bold;
+      display: inline-block;
+      min-width: 150px;
+    }
+
+    .tracking-history {
+      margin-top: 30px;
+    }
+
+    .history-item {
+      padding: 15px;
+      border-left: 3px solid #ff5722;
+      margin-bottom: 15px;
+      background: #f9f9f9;
+    }
+
+    .history-time {
+      font-size: 12px;
+      color: #777;
+    }
+
+    .history-status {
+      font-weight: bold;
+      margin: 5px 0;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #ff5722;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      margin: 10px;
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background: #e64a19;
+    }
+
+    .actions {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .order-items {
+      margin-top: 20px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+      font-size: 20px;
+    }
+
+    .eta {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #ff5722;
+    }
+
+    @media (max-width: 768px) {
+      .top-section {
+        flex-direction: column;
+      }
+      
+      .delivery-map {
+        height: 300px;
+      }
+    }
+    
+    /* Override Leaflet default styles to make sure the map is visible */
+    .leaflet-container {
+      height: 100%;
+      width: 100%;
+    }
+    
+    /* Special markers */
+    .driver-marker, .customer-marker, .restaurant-marker {
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Detailed Order Tracking</h1>
+  </header>
+
+  <div class="container" id="tracking-container">
+    <div class="loading">Loading detailed tracking information...</div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const container = document.getElementById('tracking-container');
+      
+      // Get the order ID from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get('order_id');
+      
+      if (!orderId) {
+        // If no order ID is provided, show an error
+        container.innerHTML = `
+          <div class="order-info">
+            <h2>Order Not Found</h2>
+            <p>We couldn't find the order you're looking for.</p>
+            <div class="actions">
+              <a href="/explorecode.html" class="btn">Go back to explore page</a>
+              <a href="/track-order.html" class="btn">Return to tracking page</a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      
+      // Show immediate mock data for demonstration
+      console.log("Creating immediate mock order data for demonstration");
+      const mockOrder = {
+        id: orderId || "12345",
+        order_date: new Date().toISOString(),
+        status: "out_for_delivery",
+        total_amount: 360.00,
+        delivery_address: "123 Main St, Bangalore",
+        customer_name: "Demo User",
+        customer_phone: "9876543210",
+        customer_email: "demo@example.com",
+        payment_method: "Cash on Delivery",
+        business_name: "Demo Restaurant",
+        items: [
+          { quantity: 1, name: "Chicken Biryani", price: 180.00 },
+          { quantity: 2, name: "Butter Naan", price: 30.00 },
+          { quantity: 1, name: "Paneer Tikka", price: 120.00 }
+        ]
+      };
+      
+      renderDetailedTrackingPage(mockOrder);
+      
+      // Set up periodic updates for the mock order
+      setInterval(() => {
+        // Just simulate movement for the mock order
+        if (window.driverMarker && window.deliveryMap) {
+          const currentPosition = window.driverMarker.getLatLng();
+          const randomLat = currentPosition.lat + (Math.random() - 0.5) * 0.001;
+          const randomLng = currentPosition.lng + (Math.random() - 0.5) * 0.001;
+          window.driverMarker.setLatLng([randomLat, randomLng]);
+        }
+      }, 15000);
+      
+      // Optional - Try to get real data from API in the background
+      fetch(`/api/order/${orderId}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Order not found');
+          }
+          return response.json();
+        })
+        .then(order => {
+          console.log("Received real order data:", order);
+          renderDetailedTrackingPage(order);
+          // Set up periodic updates for real-time tracking
+          setInterval(() => updateDetailedTracking(orderId), 15000); // Update every 15 seconds
+        })
+        .catch(error => {
+          console.log("Using mock order instead:", mockOrder);
+        });
+      
+      function renderDetailedTrackingPage(order) {
+        console.log("Rendering detailed tracking page with order:", order);
+        
+        // Ensure the order has a valid status, or default to 'pending'
+        if (!order.status) {
+          order.status = 'pending'; // Default status
+        }
+        
+        // Format the status text for display
+        const statusText = order.status.charAt(0).toUpperCase() + 
+                         order.status.slice(1).replace(/_/g, ' ');
+        
+        // Format order date
+        const orderDate = new Date(order.order_date).toLocaleString();
+        
+        // Calculate estimated delivery time
+        const estimatedDelivery = calculateEstimatedDelivery(order);
+        
+        // Get delivery partner info (in a real app, this would come from the backend)
+        const deliveryPartner = getDeliveryPartnerInfo(order);
+        
+        // Generate order items HTML
+        let orderItemsHtml = '';
+        if (order.items && order.items.length > 0) {
+          orderItemsHtml = `
+            <h3>Order Items</h3>
+            <ul>
+              ${order.items.map(item => `
+                <li>${item.quantity} x ${item.name} - ₹${item.price.toFixed(2)}</li>
+              `).join('')}
+            </ul>
+            <p><strong>Total:</strong> ₹${order.total.toFixed(2)}</p>
+          `;
+        } else {
+          // Demo order details if real data isn't available
+          orderItemsHtml = `
+            <h3>Order Items</h3>
+            <ul>
+              <li>1 x Chicken Biryani - ₹180.00</li>
+              <li>2 x Butter Naan - ₹60.00</li>
+              <li>1 x Paneer Tikka - ₹120.00</li>
+            </ul>
+            <p><strong>Total:</strong> ₹360.00</p>
+          `;
+        }
+        
+        // Generate tracking history HTML
+        let trackingHistoryHtml = '';
+        if (order.tracking_history && order.tracking_history.length > 0) {
+          trackingHistoryHtml = `
+            <h3>Tracking History</h3>
+            <div class="tracking-history">
+              ${order.tracking_history.map(history => `
+                <div class="history-item">
+                  <div class="history-time">${new Date(history.timestamp).toLocaleString()}</div>
+                  <div class="history-status">${history.status}</div>
+                  <div class="history-description">${history.description}</div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } else {
+          // Demo tracking history if real data isn't available
+          const orderDate = new Date(order.order_date || new Date());
+          const demoHistory = [
+            {
+              timestamp: new Date(orderDate).toISOString(),
+              status: 'Order Placed',
+              description: 'Your order has been received by the restaurant.'
+            },
+            {
+              timestamp: new Date(orderDate.getTime() + 5 * 60000).toISOString(),
+              status: 'Order Confirmed',
+              description: 'Restaurant has confirmed your order.'
+            },
+            {
+              timestamp: new Date(orderDate.getTime() + 15 * 60000).toISOString(),
+              status: 'Preparing',
+              description: 'Your food is being prepared with care.'
+            }
+          ];
+          
+          // If order status is further along, add more history items
+          if (order.status === 'out_for_delivery' || order.status === 'delivered') {
+            demoHistory.push({
+              timestamp: new Date(orderDate.getTime() + 25 * 60000).toISOString(),
+              status: 'Out for Delivery',
+              description: 'Your food is on the way to you!'
+            });
+          }
+          
+          if (order.status === 'delivered') {
+            demoHistory.push({
+              timestamp: new Date(orderDate.getTime() + 40 * 60000).toISOString(),
+              status: 'Delivered',
+              description: 'Your order has been delivered. Enjoy your meal!'
+            });
+          }
+          
+          trackingHistoryHtml = `
+            <h3>Tracking History</h3>
+            <div class="tracking-history">
+              ${demoHistory.map(history => `
+                <div class="history-item">
+                  <div class="history-time">${new Date(history.timestamp).toLocaleString()}</div>
+                  <div class="history-status">${history.status}</div>
+                  <div class="history-description">${history.description}</div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+        
+        container.innerHTML = `
+          <div class="order-info">
+            <h2>Order #${order.id}</h2>
+            <p>Placed on ${orderDate}</p>
+            <p>Status: <strong>${statusText}</strong></p>
+            <div class="eta" id="delivery-eta">
+              Estimated delivery: ${estimatedDelivery}
+            </div>
+          </div>
+          
+          <div class="top-section">
+            <div class="order-summary">
+              <h3>Order Summary</h3>
+              <div class="detail-group">
+                <span class="detail-label">Order ID:</span>
+                <span>${order.id}</span>
+              </div>
+              <div class="detail-group">
+                <span class="detail-label">Order Date:</span>
+                <span>${orderDate}</span>
+              </div>
+              <div class="detail-group">
+                <span class="detail-label">Delivery Address:</span>
+                <span>${order.delivery_address || '123 Main St, Bangalore'}</span>
+              </div>
+              <div class="order-items">
+                ${orderItemsHtml}
+              </div>
+            </div>
+            
+            ${deliveryPartner ? `
+              <div class="delivery-info">
+                <h3>Delivery Partner</h3>
+                
+                <div class="detail-group">
+                  <span class="detail-label">Name:</span>
+                  <span>${deliveryPartner.name}</span>
+                </div>
+                
+                <div class="detail-group">
+                  <span class="detail-label">Phone:</span>
+                  <span>${deliveryPartner.phone}</span>
+                </div>
+                
+                <div class="detail-group">
+                  <span class="detail-label">Vehicle:</span>
+                  <span>${deliveryPartner.vehicle}</span>
+                </div>
+                
+                <div class="detail-group">
+                  <span class="detail-label">Current Location:</span>
+                  <span id="current-location">${deliveryPartner.currentLocation}</span>
+                </div>
+                
+                <div class="detail-group">
+                  <span class="detail-label">Est. Arrival:</span>
+                  <span>${estimatedDelivery}</span>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+          
+          <div class="tracking-map-container">
+            <h3>Live Tracking Map</h3>
+            <div class="delivery-map" id="map">
+              <!-- Map will be inserted here by the OpenStreetMap API -->
+            </div>
+          </div>
+          
+          ${trackingHistoryHtml}
+          
+          <div class="actions">
+            <a href="/explorecode.html" class="btn">Continue Shopping</a>
+            <a href="/track-order.html?order_id=${order.id}" class="btn">Return to Tracking Page</a>
+            <a href="tel:${deliveryPartner ? deliveryPartner.phone.replace(/\s+/g, '') : '919102935431'}" class="btn">Call Delivery Partner</a>
+          </div>
+        `;
+        
+        // Give the DOM time to update before initializing the map
+        setTimeout(() => {
+          // Initialize the map if delivery partner info is available
+          if (deliveryPartner) {
+            try {
+              initializeDetailedMap(order.delivery_address, deliveryPartner.location);
+            } catch (error) {
+              console.error("Error initializing map with delivery partner:", error);
+              
+              // Try a fallback map initialization with fixed coordinates
+              try {
+                const mapContainer = document.getElementById('map');
+                if (mapContainer) {
+                  mapContainer.innerHTML = '';
+                  const fallbackMap = L.map('map').setView([12.9716, 77.5946], 13);
+                  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                  }).addTo(fallbackMap);
+                  L.marker([12.9716, 77.5946]).addTo(fallbackMap)
+                    .bindPopup('Bangalore')
+                    .openPopup();
+                }
+              } catch (fallbackError) {
+                console.error("Fallback map also failed:", fallbackError);
+              }
+            }
+          } else {
+            console.log("No delivery partner info available - not showing map");
+            // Show a message in the map container
+            const mapContainer = document.getElementById('map');
+            if (mapContainer) {
+              mapContainer.innerHTML = `
+                <div style="padding: 50px; text-align: center;">
+                  <p>Live tracking will be available once your order is out for delivery.</p>
+                  <p>Current status: ${statusText}</p>
+                </div>
+              `;
+            }
+          }
+        }, 500);
+      }
+      
+      function initializeDetailedMap(deliveryAddress, driverLocation) {
+        console.log("Initializing map with driver location:", driverLocation);
+        
+        try {
+          // Check if map container exists
+          const mapContainer = document.getElementById('map');
+          if (!mapContainer) {
+            console.error("Map container not found!");
+            return;
+          }
+          
+          // Make sure the container is empty
+          mapContainer.innerHTML = '';
+          
+          // Create a map centered at the initial driver location
+          const map = L.map('map').setView([driverLocation.lat, driverLocation.lng], 15);
+          
+          // Add the OpenStreetMap tiles
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(map);
+          
+          // Add marker for customer location (delivery address)
+          // In a real app, you would geocode the delivery address to get coordinates
+          const customerLocation = { lat: driverLocation.lat + 0.005, lng: driverLocation.lng + 0.005 }; // Simulated customer location
+          const customerMarker = L.marker([customerLocation.lat, customerLocation.lng], {
+            icon: L.divIcon({
+              html: '🏠',
+              className: 'customer-marker',
+              iconSize: [40, 40],
+              iconAnchor: [20, 40]
+            })
+          })
+            .addTo(map)
+            .bindPopup('Delivery Address')
+            .openPopup();
+          
+          // Add marker for driver's current location
+          const driverMarker = L.marker([driverLocation.lat, driverLocation.lng], {
+            icon: L.divIcon({
+              html: '🛵',
+              className: 'driver-marker',
+              iconSize: [40, 40],
+              iconAnchor: [20, 40]
+            })
+          })
+            .addTo(map)
+            .bindPopup('Delivery Partner')
+            .openPopup();
+            
+          // Store the driver marker in a global variable so it can be updated
+          window.driverMarker = driverMarker;
+          window.deliveryMap = map;
+          
+          // Add restaurant location marker (simulated)
+          const restaurantLocation = { 
+            lat: driverLocation.lat - 0.003, 
+            lng: driverLocation.lng - 0.005 
+          };
+          const restaurantMarker = L.marker([restaurantLocation.lat, restaurantLocation.lng], {
+            icon: L.divIcon({
+              html: '🍽️',
+              className: 'restaurant-marker',
+              iconSize: [40, 40],
+              iconAnchor: [20, 40]
+            })
+          })
+            .addTo(map)
+            .bindPopup('Restaurant Location')
+            .openPopup();
+            
+          // Draw a line between driver and delivery address (the active route)
+          const routeLine = L.polyline([
+              [driverLocation.lat, driverLocation.lng],
+              [customerLocation.lat, customerLocation.lng]
+          ], {color: 'blue', weight: 5, dashArray: '10, 10'}).addTo(map);
+          
+          // Add completed route from restaurant to current driver position
+          const completedRouteLine = L.polyline([
+              [restaurantLocation.lat, restaurantLocation.lng],
+              [driverLocation.lat, driverLocation.lng]
+          ], {color: 'green', weight: 5}).addTo(map);
+          
+          // Make sure the map fits all points
+          const bounds = L.latLngBounds([
+              [driverLocation.lat, driverLocation.lng],
+              [customerLocation.lat, customerLocation.lng],
+              [restaurantLocation.lat, restaurantLocation.lng]
+          ]);
+          map.fitBounds(bounds, { padding: [50, 50] });
+          
+          // Make sure the map is visible - force update after rendering
+          setTimeout(() => {
+            map.invalidateSize();
+          }, 100);
+          
+          console.log("Map initialization completed successfully");
+        } catch (error) {
+          console.error("Error initializing map:", error);
+          // Show a message in the map container that there was an error
+          const mapContainer = document.getElementById('map');
+          if (mapContainer) {
+            mapContainer.innerHTML = `
+              <div style="padding: 20px; text-align: center;">
+                <p>Unable to load map. Please try again later.</p>
+                <p>Error: ${error.message}</p>
+              </div>
+            `;
+          }
+        }
+      }
+      
+      function updateDetailedTracking(orderId) {
+        fetch(`/api/order/${orderId}`)
+          .then(response => response.json())
+          .then(order => {
+            // Update driver location on map
+            const deliveryPartner = getDeliveryPartnerInfo(order);
+            
+            // Update the current location text
+            const locationEl = document.getElementById('current-location');
+            if (locationEl && deliveryPartner) {
+              locationEl.textContent = deliveryPartner.currentLocation;
+            }
+            
+            // Update ETA
+            const etaEl = document.getElementById('delivery-eta');
+            if (etaEl) {
+              etaEl.textContent = 'Estimated delivery: ' + calculateEstimatedDelivery(order);
+            }
+            
+            // Update the map with the new driver location
+            if (window.driverMarker && deliveryPartner) {
+              const newLatLng = [deliveryPartner.location.lat, deliveryPartner.location.lng];
+              window.driverMarker.setLatLng(newLatLng);
+              
+              // If needed, update the view to keep the driver in sight
+              window.deliveryMap.panTo(newLatLng);
+            }
+          })
+          .catch(error => {
+            console.error('Error updating detailed tracking info:', error);
+            
+            // If we can't get data from the API, just simulate driver movement with random coordinates
+            if (window.driverMarker && window.deliveryMap) {
+              const currentPosition = window.driverMarker.getLatLng();
+              const randomLat = currentPosition.lat + (Math.random() - 0.5) * 0.001;
+              const randomLng = currentPosition.lng + (Math.random() - 0.5) * 0.001;
+              window.driverMarker.setLatLng([randomLat, randomLng]);
+            }
+          });
+      }
+      
+      function calculateEstimatedDelivery(order) {
+        // This is a placeholder - in a real app, this would use real-time data
+        // from your backend about preparation time and delivery distance
+        if (order.status === 'delivered') {
+          return 'Delivered';
+        }
+        
+        if (order.status === 'cancelled') {
+          return 'Order cancelled';
+        }
+        
+        // Return fixed time instead of calculation
+        return '20mins';
+      }
+      
+      function getDeliveryPartnerInfo(order) {
+        console.log("Getting delivery partner info for order with status:", order.status);
+        
+        // For demonstration purposes, we'll return mock delivery partner info even if 
+        // the order is not out for delivery, to always show the map
+        
+        // Simulate random coordinates near Bangalore for demonstration
+        const bangaloreCoords = { lat: 12.9716, lng: 77.5946 };
+        // Add some random offset for simulation
+        const lat = bangaloreCoords.lat + (Math.random() - 0.5) * 0.02;
+        const lng = bangaloreCoords.lng + (Math.random() - 0.5) * 0.02;
+        
+        // For statuses other than out_for_delivery and delivered, 
+        // show the driver at the restaurant location
+        let driverLat = lat;
+        let driverLng = lng;
+        let locationDesc = 'Near ' + (order.delivery_address ? order.delivery_address.split(',')[0] : 'your location');
+        
+        // If the order is in an earlier stage, position the driver at the restaurant
+        if (order.status !== 'out_for_delivery' && order.status !== 'delivered') {
+          driverLat = bangaloreCoords.lat - 0.003;
+          driverLng = bangaloreCoords.lng - 0.005;
+          locationDesc = 'At the restaurant preparing your order';
+        }
+        
+        return {
+          name: 'John Doe',
+          phone: '+91 98765 43210',
+          vehicle: 'Honda Activa (Blue)',
+          currentLocation: locationDesc,
+          // In a real app, you would have real GPS coordinates here for the map
+          location: { lat: driverLat, lng: driverLng }
+        };
+      }
+    });
+  </script>
+</body>
+</html>

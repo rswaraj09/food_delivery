@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swift Serve - Order Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="../swift.css">
+    <style>
+        .order-details-container {
+            max-width: 900px;
+            margin: 120px auto;
+            background: var(--bg-color-1);
+            box-shadow: var(--box-shadow);
+            border-radius: 10px;
+            padding: 2rem;
+        }
+        .order-details-container h1 {
+            text-align: center;
+            color: var(--text-color-1);
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .order-info-box {
+            background: var(--bg-color-2);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .order-info-box h3 {
+            color: var(--text-color-1);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.5rem;
+        }
+        .order-info-box p {
+            color: var(--text-color-2);
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+        }
+        .order-info-box p span {
+            font-weight: bold;
+            color: var(--text-color-1);
+        }
+        .order-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        .order-items-table th, 
+        .order-items-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--bg-color-2);
+            font-size: 1.6rem;
+        }
+        .order-items-table th {
+            background-color: var(--bg-color-2);
+            color: var(--text-color-1);
+            font-weight: bold;
+        }
+        .order-items-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .order-total {
+            text-align: right;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-color-1);
+            margin: 2rem 0;
+        }
+        .order-status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: white;
+        }
+        .status-pending {
+            background-color: #f39c12;
+        }
+        .status-confirmed {
+            background-color: var(--blue);
+        }
+        .status-delivered {
+            background-color: var(--green);
+        }
+        .status-canceled {
+            background-color: #e74c3c;
+        }
+        .student-discount {
+            background-color: var(--orange);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            font-size: 1.6rem;
+            text-align: center;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--orange);
+            font-size: 1.6rem;
+        }
+        .back-link i {
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <header class="header">
+            <a href="../index.html" class="logo"><i class="ri-restaurant-2-fill"></i> SWIFT SERVE</a>
+        </header>
+        
+        <div class="order-details-container">
+            <h1>Order Details</h1>
+            
+            <div id="student-discount-banner" class="student-discount" style="display: none;">
+                <i class="ri-award-fill"></i> Student Discount: 50% off applied to this order!
+            </div>
+            
+            <div class="order-info">
+                <div class="order-info-box">
+                    <h3>Order Information</h3>
+                    <p>Order ID: <span id="order-id"></span></p>
+                    <p>Date: <span id="order-date"></span></p>
+                    <p>Status: <span id="order-status"></span></p>
+                    <p>Payment Method: <span id="payment-method"></span></p>
+                </div>
+                
+                <div class="order-info-box">
+                    <h3>Delivery Information</h3>
+                    <p>Customer: <span id="customer-name"></span></p>
+                    <p>Phone: <span id="customer-phone"></span></p>
+                    <p>Email: <span id="customer-email"></span></p>
+                    <p>Address: <span id="delivery-address"></span></p>
+                </div>
+            </div>
+            
+            <h3>Order Items</h3>
+            <table class="order-items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="order-items">
+                    <!-- Will be populated dynamically -->
+                </tbody>
+            </table>
+            
+            <div id="original-amount" class="order-total" style="display: none; color: var(--text-color-2); text-decoration: line-through;"></div>
+            <div id="order-total" class="order-total"></div>
+            
+            <a href="javascript:history.back()" class="back-link"><i class="ri-arrow-left-line"></i> Back</a>
+        </div>
+        
+        <section class="footer">
+            <div class="box-container">
+                <div class="box">
+                    <h3>Quick Links</h3>
+                    <a href="../index.html"><i class="ri-home-5-fill"></i> Home</a>
+                    <a href="../index.html#packages"><i class="ri-inbox-unarchive-fill"></i> Packages</a>
+                    <a href="../index.html#services"><i class="ri-service-fill"></i> Services</a>
+                    <a href="../index.html#pricing"><i class="ri-price-tag-3-fill"></i> Prices</a>
+                </div>
+                
+                <div class="box">
+                    <h3>Contact Info</h3>
+                    <a href="tel:+919356360179"><i class="ri-contacts-fill"></i> +91-9356360179</a>
+                    <a href="mailto:swiftserver999@gmail.com"><i class="ri-mail-unread-fill"></i> swiftserver999@gmail.com</a>
+                    <a href="#"><i class="ri-map-pin-2-fill"></i> Mumbai, Raigad-410203</a>
+                </div>
+            </div>
+            
+            <div class="credit">
+                <p>&copy; 2025 Swift Serve. All rights reserved.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get order ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id');
+            
+            if (!orderId) {
+                window.location.href = '../user-panel.html';
+                return;
+            }
+            
+            // Load order details
+            fetch(`/api/order/${orderId}`)
+                .then(response => response.json())
+                .then(order => {
+                    if (order.error) {
+                        alert('Error loading order details.');
+                        return;
+                    }
+                    
+                    // Fill order information
+                    document.getElementById('order-id').textContent = order.id;
+                    
+                    // Format date
+                    const orderDate = new Date(order.order_date);
+                    document.getElementById('order-date').textContent = orderDate.toLocaleString();
+                    
+                    // Status with color coding
+                    const statusElement = document.getElementById('order-status');
+                    statusElement.textContent = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+                    statusElement.className = `order-status status-${order.status.toLowerCase()}`;
+                    
+                    document.getElementById('payment-method').textContent = order.payment_method;
+                    document.getElementById('customer-name').textContent = order.customer_name;
+                    document.getElementById('customer-phone').textContent = order.customer_phone;
+                    document.getElementById('customer-email').textContent = order.customer_email;
+                    document.getElementById('delivery-address').textContent = order.delivery_address;
+                    
+                    // Fill order items
+                    const orderItemsTable = document.getElementById('order-items');
+                    orderItemsTable.innerHTML = '';
+                    
+                    let itemsTotal = 0;
+                    
+                    order.items.forEach(item => {
+                        const itemTotal = parseFloat(item.price) * parseInt(item.quantity);
+                        itemsTotal += itemTotal;
+                        
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.item_name}</td>
+                            <td>${item.quantity}</td>
+                            <td>₹${parseFloat(item.price).toFixed(2)}</td>
+                            <td>₹${itemTotal.toFixed(2)}</td>
+                        `;
+                        
+                        orderItemsTable.appendChild(row);
+                    });
+                    
+                    // Handle student discount display
+                    if (order.discount_applied) {
+                        document.getElementById('student-discount-banner').style.display = 'block';
+                        
+                        // Calculate original amount (before discount)
+                        const discountPercentage = parseFloat(order.discount_percentage);
+                        const discountMultiplier = (100 / (100 - discountPercentage));
+                        const originalAmount = parseFloat(order.total_amount) * discountMultiplier;
+                        
+                        document.getElementById('original-amount').style.display = 'block';
+                        document.getElementById('original-amount').textContent = `Original Total: ₹${originalAmount.toFixed(2)}`;
+                    }
+                    
+                    // Display total
+                    document.getElementById('order-total').textContent = `Total: ₹${parseFloat(order.total_amount).toFixed(2)}`;
+                })
+                .catch(error => {
+                    console.error('Error loading order details:', error);
+                    alert('Failed to load order details. Please try again later.');
+                });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Place Order - Swift Serve</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7ca91;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background-color: #ff5722;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      padding: 0 20px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .order-summary {
+      background: #fff;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .item-image {
+      width: 100%;
+      height: 200px;
+      border-radius: 10px;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+
+    .item-info h2 {
+      margin-top: 0;
+      color: #ff5722;
+    }
+
+    .restaurant-name {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .price {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+
+    .quantity {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    .quantity-btn {
+      width: 32px;
+      height: 32px;
+      background: #eee;
+      border: none;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quantity-btn:hover {
+      background: #ddd;
+    }
+
+    .quantity-input {
+      width: 40px;
+      height: 30px;
+      text-align: center;
+      margin: 0 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .total {
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .order-form {
+      background: #fff;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    textarea {
+      height: 80px;
+      resize: vertical;
+    }
+
+    .submit-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+      background: #218838;
+    }
+
+    .error {
+      color: #d9534f;
+      font-size: 14px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      display: none;
+    }
+
+    .go-back {
+      display: inline-block;
+      margin-top: 20px;
+      color: #ff5722;
+      text-decoration: none;
+    }
+
+    .go-back:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Complete Your Order</h1>
+  </header>
+
+  <div class="container" id="order-container">
+    <div class="loading">Loading item information...</div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get the menu item ID from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const itemId = urlParams.get('item');
+      
+      if (!itemId) {
+        // If no item ID is provided, show an error
+        document.getElementById('order-container').innerHTML = `
+          <div style="grid-column: span 2; text-align: center; padding: 50px;">
+            <h2>Item Not Found</h2>
+            <p>The item you're looking for was not specified.</p>
+            <a href="/explorecode.html" class="go-back">Go back to explore page</a>
+          </div>
+        `;
+        return;
+      }
+      
+      // Show loading indicator
+      document.getElementById('order-container').innerHTML = `
+        <div style="grid-column: span 2; text-align: center; padding: 50px;">
+          <h2>Loading...</h2>
+          <p>Please wait while we fetch the item details.</p>
+        </div>
+      `;
+      
+      // Fetch the menu item details
+      fetch(`/api/menu-item/${itemId}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Item not found');
+          }
+          return response.json();
+        })
+        .then(item => {
+          renderOrderPage(item);
+        })
+        .catch(error => {
+          console.error('Error fetching item:', error);
+          document.getElementById('order-container').innerHTML = `
+            <div style="grid-column: span 2; text-align: center; padding: 50px;">
+              <h2>Error</h2>
+              <p>Failed to load item details. Please try again later.</p>
+              <a href="/explorecode.html" class="go-back">Go back to explore page</a>
+            </div>
+          `;
+        });
+      
+      // Function to render the order page with item details
+      function renderOrderPage(item) {
+        const container = document.getElementById('order-container');
+        
+        // Define placeholder image for items without an image_url
+        const imageUrl = item.image_url || 'https://via.placeholder.com/400x300?text=No+Image+Available';
+        
+        // Create the HTML content
+        container.innerHTML = `
+          <div class="order-summary">
+            <img src="${imageUrl}" alt="${item.item_name}" class="item-image" onerror="this.src='https://via.placeholder.com/400x300?text=Image+Not+Available'">
+            <div class="item-info">
+              <div class="restaurant-name">From: ${item.business_name || 'Restaurant'}</div>
+              <h2>${item.item_name}</h2>
+              <p>${item.description || 'No description available.'}</p>
+              <div class="price">₹${parseFloat(item.price).toFixed(2)}</div>
+              
+              <div class="quantity">
+                <label>Quantity:</label>
+                <button class="quantity-btn" id="decrease-btn">-</button>
+                <input type="number" class="quantity-input" id="quantity" value="1" min="1" max="10">
+                <button class="quantity-btn" id="increase-btn">+</button>
+              </div>
+              
+              <div class="total">
+                Total: ₹<span id="total-amount">${parseFloat(item.price).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="order-form">
+            <div class="success-message" id="success-message"></div>
+            
+            <form id="order-form">
+              <input type="hidden" id="menu-item-id" value="${item.id}">
+              
+              <div class="form-group">
+                <label for="customer-name">Full Name *</label>
+                <input type="text" id="customer-name" required>
+                <div class="error" id="name-error">Please enter your name</div>
+              </div>
+              
+              <div class="form-group">
+                <label for="customer-email">Email *</label>
+                <input type="email" id="customer-email" required>
+                <div class="error" id="email-error">Please enter a valid email</div>
+              </div>
+              
+              <div class="form-group">
+                <label for="customer-phone">Phone Number *</label>
+                <input type="tel" id="customer-phone" required>
+                <div class="error" id="phone-error">Please enter your phone number</div>
+              </div>
+              
+              <div class="form-group">
+                <label for="delivery-address">Delivery Address *</label>
+                <textarea id="delivery-address" required></textarea>
+                <div class="error" id="address-error">Please enter your delivery address</div>
+              </div>
+              
+              <div class="form-group">
+                <label for="payment-method">Payment Method</label>
+                <select id="payment-method">
+                  <option value="Cash on Delivery">Cash on Delivery</option>
+                  <option value="Online Payment">Online Payment</option>
+                  <option value="Card on Delivery">Card on Delivery</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="special-instructions">Special Instructions (Optional)</label>
+                <textarea id="special-instructions"></textarea>
+              </div>
+              
+              <button type="submit" class="submit-btn">Place Order</button>
+            </form>
+          </div>
+        `;
+        
+        // Set up event listeners for quantity buttons
+        const decreaseBtn = document.getElementById('decrease-btn');
+        const increaseBtn = document.getElementById('increase-btn');
+        const quantityInput = document.getElementById('quantity');
+        const totalAmount = document.getElementById('total-amount');
+        
+        decreaseBtn.addEventListener('click', function() {
+          if (parseInt(quantityInput.value) > 1) {
+            quantityInput.value = parseInt(quantityInput.value) - 1;
+            updateTotal();
+          }
+        });
+        
+        increaseBtn.addEventListener('click', function() {
+          if (parseInt(quantityInput.value) < 10) {
+            quantityInput.value = parseInt(quantityInput.value) + 1;
+            updateTotal();
+          }
+        });
+        
+        quantityInput.addEventListener('change', function() {
+          if (parseInt(this.value) < 1) {
+            this.value = 1;
+          } else if (parseInt(this.value) > 10) {
+            this.value = 10;
+          }
+          updateTotal();
+        });
+        
+        function updateTotal() {
+          const quantity = parseInt(quantityInput.value);
+          const price = parseFloat(item.price);
+          totalAmount.textContent = (quantity * price).toFixed(2);
+        }
+        
+        // Set up form submission
+        const orderForm = document.getElementById('order-form');
+        
+        orderForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          // Hide any previous error messages
+          document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
+          
+          // Get form values
+          const menuItemId = document.getElementById('menu-item-id').value;
+          const quantity = document.getElementById('quantity').value;
+          const customerName = document.getElementById('customer-name').value;
+          const customerEmail = document.getElementById('customer-email').value;
+          const customerPhone = document.getElementById('customer-phone').value;
+          const deliveryAddress = document.getElementById('delivery-address').value;
+          const paymentMethod = document.getElementById('payment-method').value;
+          const specialInstructions = document.getElementById('special-instructions').value;
+          
+          // Validate form
+          let isValid = true;
+          
+          if (!customerName.trim()) {
+            document.getElementById('name-error').style.display = 'block';
+            isValid = false;
+          }
+          
+          if (!customerEmail.trim() || !isValidEmail(customerEmail)) {
+            document.getElementById('email-error').style.display = 'block';
+            isValid = false;
+          }
+          
+          if (!customerPhone.trim()) {
+            document.getElementById('phone-error').style.display = 'block';
+            isValid = false;
+          }
+          
+          if (!deliveryAddress.trim()) {
+            document.getElementById('address-error').style.display = 'block';
+            isValid = false;
+          }
+          
+          if (!isValid) {
+            return;
+          }
+          
+          // Disable submit button during submission
+          const submitBtn = document.querySelector('.submit-btn');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Processing...';
+          
+          // Create form data for submission
+          const formData = new FormData();
+          formData.append('menu_item_id', menuItemId);
+          formData.append('quantity', quantity);
+          formData.append('customer_name', customerName);
+          formData.append('customer_email', customerEmail);
+          formData.append('customer_phone', customerPhone);
+          formData.append('delivery_address', deliveryAddress);
+          formData.append('payment_method', paymentMethod);
+          formData.append('special_instructions', specialInstructions);
+          
+          // Submit the order
+          fetch('/api/place-order', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Place Order';
+            
+            if (data.success) {
+              // Show success message
+              const successMessage = document.getElementById('success-message');
+              successMessage.style.display = 'block';
+              successMessage.textContent = data.message || 'Order placed successfully!';
+              
+              // Clear form
+              orderForm.reset();
+              
+              // Scroll to top to show success message
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              
+              // Redirect to confirmation page after a delay
+              setTimeout(() => {
+                window.location.href = `/order-confirmation.html?order_id=${data.order_id}`;
+              }, 1000);
+            } else {
+              alert('Error: ' + (data.error || 'Failed to place order. Please try again.'));
+            }
+          })
+          .catch(error => {
+            console.error('Error submitting order:', error);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Place Order';
+            alert('Error submitting order. Please try again later.');
+          });
+        });
+        
+        function isValidEmail(email) {
+          // Simple email validation regex
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(email);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

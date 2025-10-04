@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Track Order - Swift Serve</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- OpenStreetMap Leaflet CSS and JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7ca91;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background-color: #ff5722;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+    }
+
+    .order-info {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .order-info h2 {
+      color: #ff5722;
+      margin-bottom: 10px;
+    }
+
+    .tracking-container {
+      margin-top: 30px;
+    }
+
+    .tracking-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .tracking-steps::before {
+      content: '';
+      position: absolute;
+      top: 30px;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: #ddd;
+      z-index: 1;
+    }
+
+    .step {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: 60px;
+    }
+
+    .step-icon {
+      width: 60px;
+      height: 60px;
+      background: #ddd;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+      font-size: 24px;
+      color: white;
+    }
+
+    .step.active .step-icon {
+      background: #ff5722;
+    }
+
+    .step.completed .step-icon {
+      background: #28a745;
+    }
+
+    .step-label {
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .delivery-info {
+      margin-top: 40px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 10px;
+    }
+
+    .delivery-info h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .detail-group {
+      margin-bottom: 15px;
+    }
+
+    .detail-label {
+      font-weight: bold;
+      display: inline-block;
+      min-width: 150px;
+    }
+
+    .delivery-map {
+      width: 100%;
+      height: 300px;
+      background: #eee;
+      border-radius: 10px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+    
+    .eta {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 30px 0;
+      color: #ff5722;
+    }
+
+    .actions {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #ff5722;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      margin: 0 10px;
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background: #e64a19;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 30px;
+    }
+
+    @media (max-width: 600px) {
+      .step-label {
+        font-size: 10px;
+      }
+      
+      .step-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+      }
+      
+      .tracking-steps::before {
+        top: 20px;
+      }
+    }
+
+    /* Order details modal */
+    .details-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .details-modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 10px;
+      padding: 20px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+
+    .close-modal {
+      font-size: 24px;
+      cursor: pointer;
+      color: #777;
+    }
+
+    .close-modal:hover {
+      color: #333;
+    }
+
+    .tracking-history {
+      margin-top: 20px;
+    }
+
+    .history-item {
+      padding: 15px;
+      border-left: 3px solid #ff5722;
+      margin-bottom: 15px;
+      background: #f9f9f9;
+    }
+
+    .history-time {
+      font-size: 12px;
+      color: #777;
+    }
+
+    .history-status {
+      font-weight: bold;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Track Your Order</h1>
+  </header>
+
+  <div class="container" id="tracking-container">
+    <div class="loading">Loading tracking information...</div>
+  </div>
+
+  <!-- Order Details Modal -->
+  <div class="details-modal" id="details-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Order Tracking Details</h2>
+        <span class="close-modal" id="close-modal">&times;</span>
+      </div>
+      <div id="order-details-content">
+        <!-- Content will be filled dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Define showOrderDetails in the global scope
+    let currentOrder; // Store the order globally
+    
+    function showOrderDetails(order) {
+      // If no order is passed, use the global currentOrder
+      if (!order) {
+        order = currentOrder;
+      }
+      
+      if (!order) {
+        console.error('No order data available');
+        alert('Order details not available. Please try again.');
+        return;
+      }
+      
+      const modal = document.getElementById('details-modal');
+      const detailsContent = document.getElementById('order-details-content');
+      
+      // Generate order items HTML
+      let orderItemsHtml = '';
+      if (order.items && order.items.length > 0) {
+        orderItemsHtml = `
+          <h3>Order Items</h3>
+          <ul>
+            ${order.items.map(item => `
+              <li>${item.quantity} x ${item.name} - ₹${item.price.toFixed(2)}</li>
+            `).join('')}
+          </ul>
+          <p><strong>Total:</strong> ₹${order.total.toFixed(2)}</p>
+        `;
+      } else {
+        // Demo order details if real data isn't available
+        orderItemsHtml = `
+          <h3>Order Items</h3>
+          <ul>
+            <li>1 x Chicken Biryani - ₹180.00</li>
+            <li>2 x Butter Naan - ₹60.00</li>
+            <li>1 x Paneer Tikka - ₹120.00</li>
+          </ul>
+          <p><strong>Total:</strong> ₹360.00</p>
+        `;
+      }
+      
+      // Generate tracking history HTML
+      let trackingHistoryHtml = '';
+      if (order.tracking_history && order.tracking_history.length > 0) {
+        trackingHistoryHtml = `
+          <h3>Tracking History</h3>
+          <div class="tracking-history">
+            ${order.tracking_history.map(history => `
+              <div class="history-item">
+                <div class="history-time">${new Date(history.timestamp).toLocaleString()}</div>
+                <div class="history-status">${history.status}</div>
+                <div class="history-description">${history.description}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        // Demo tracking history if real data isn't available
+        const orderDate = new Date(order.order_date || new Date());
+        const demoHistory = [
+          {
+            timestamp: new Date(orderDate).toISOString(),
+            status: 'Order Placed',
+            description: 'Your order has been received by the restaurant.'
+          },
+          {
+            timestamp: new Date(orderDate.getTime() + 5 * 60000).toISOString(),
+            status: 'Order Confirmed',
+            description: 'Restaurant has confirmed your order.'
+          },
+          {
+            timestamp: new Date(orderDate.getTime() + 15 * 60000).toISOString(),
+            status: 'Preparing',
+            description: 'Your food is being prepared with care.'
+          }
+        ];
+        
+        // If order status is further along, add more history items
+        if (order.status === 'out_for_delivery' || order.status === 'delivered') {
+          demoHistory.push({
+            timestamp: new Date(orderDate.getTime() + 25 * 60000).toISOString(),
+            status: 'Out for Delivery',
+            description: 'Your food is on the way to you!'
+          });
+        }
+        
+        if (order.status === 'delivered') {
+          demoHistory.push({
+            timestamp: new Date(orderDate.getTime() + 40 * 60000).toISOString(),
+            status: 'Delivered',
+            description: 'Your order has been delivered. Enjoy your meal!'
+          });
+        }
+        
+        trackingHistoryHtml = `
+          <h3>Tracking History</h3>
+          <div class="tracking-history">
+            ${demoHistory.map(history => `
+              <div class="history-item">
+                <div class="history-time">${new Date(history.timestamp).toLocaleString()}</div>
+                <div class="history-status">${history.status}</div>
+                <div class="history-description">${history.description}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      
+      // Create full HTML content for the modal
+      detailsContent.innerHTML = `
+        <div class="order-details">
+          <div class="detail-group">
+            <span class="detail-label">Order ID:</span>
+            <span>${order.id}</span>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Order Date:</span>
+            <span>${new Date(order.order_date).toLocaleString()}</span>
+          </div>
+          <div class="detail-group">
+            <span class="detail-label">Delivery Address:</span>
+            <span>${order.delivery_address || '123 Main St, Bangalore'}</span>
+          </div>
+          ${orderItemsHtml}
+          ${trackingHistoryHtml}
+        </div>
+      `;
+      
+      // Show the modal
+      modal.classList.add('active');
+    }
+    
+    // Close modal function in global scope
+    function closeTrackingModal() {
+      document.getElementById('details-modal').classList.remove('active');
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const container = document.getElementById('tracking-container');
+      
+      // Get the order ID from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get('order_id');
+      
+      if (!orderId) {
+        // If no order ID is provided, show an error
+        container.innerHTML = `
+          <div class="order-info">
+            <h2>Order Not Found</h2>
+            <p>We couldn't find the order you're looking for.</p>
+            <div class="actions">
+              <a href="/explorecode.html" class="btn">Go back to explore page</a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      
+      // Fetch the order details from the API
+      fetch(`/api/order/${orderId}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Order not found');
+          }
+          return response.json();
+        })
+        .then(order => {
+          renderTrackingPage(order);
+          // Set up periodic updates for real-time tracking
+          setInterval(() => updateTrackingInfo(orderId), 30000); // Update every 30 seconds
+        })
+        .catch(error => {
+          console.error('Error fetching order:', error);
+          container.innerHTML = `
+            <div class="order-info">
+              <h2>Error</h2>
+              <p>Failed to load tracking information. Please try again later.</p>
+              <div class="actions">
+                <a href="/explorecode.html" class="btn">Go back to explore page</a>
+              </div>
+            </div>
+          `;
+        });
+      
+      function renderTrackingPage(order) {
+        // Store order in the global variable for direct access
+        currentOrder = order;
+        
+        // Format the status text for display
+        const statusText = order.status.charAt(0).toUpperCase() + 
+                         order.status.slice(1).replace(/_/g, ' ');
+        
+        // Format order date
+        const orderDate = new Date(order.order_date).toLocaleString();
+        
+        // Calculate estimated delivery time (example calculation)
+        const estimatedDelivery = calculateEstimatedDelivery(order);
+        
+        // Determine which steps are complete or active based on order status
+        const steps = {
+          ordered: false,
+          accepted: false,
+          preparing: false,
+          out_for_delivery: false,
+          delivered: false
+        };
+        
+        // Set steps based on order status
+        const statusSteps = ['ordered', 'accepted', 'preparing', 'out_for_delivery', 'delivered'];
+        const currentStepIndex = statusSteps.indexOf(order.status);
+        
+        statusSteps.forEach((step, index) => {
+          if (index < currentStepIndex) {
+            steps[step] = 'completed';
+          } else if (index === currentStepIndex) {
+            steps[step] = 'active';
+          }
+        });
+        
+        // Get delivery partner info (in a real app, this would come from the backend)
+        const deliveryPartner = getDeliveryPartnerInfo(order);
+        
+        container.innerHTML = `
+          <div class="order-info">
+            <h2>Order #${order.id}</h2>
+            <p>Placed on ${orderDate}</p>
+            <p>Status: <strong>${statusText}</strong></p>
+          </div>
+          
+          <div class="tracking-container">
+            <h3>Order Progress</h3>
+            <div class="tracking-steps">
+              <div class="step ${steps.ordered ? steps.ordered : ''}">
+                <div class="step-icon">📋</div>
+                <div class="step-label">Ordered</div>
+              </div>
+              <div class="step ${steps.accepted ? steps.accepted : ''}">
+                <div class="step-icon">✓</div>
+                <div class="step-label">Accepted</div>
+              </div>
+              <div class="step ${steps.preparing ? steps.preparing : ''}">
+                <div class="step-icon">👨‍🍳</div>
+                <div class="step-label">Preparing</div>
+              </div>
+              <div class="step ${steps.out_for_delivery ? steps.out_for_delivery : ''}">
+                <div class="step-icon">🚚</div>
+                <div class="step-label">On the way</div>
+              </div>
+              <div class="step ${steps.delivered ? steps.delivered : ''}">
+                <div class="step-icon">🏠</div>
+                <div class="step-label">Delivered</div>
+              </div>
+            </div>
+            
+            <div class="eta" id="delivery-eta">
+              Estimated delivery: ${estimatedDelivery}
+            </div>
+            
+            ${deliveryPartner ? `
+              <div class="delivery-info">
+                <h3>Delivery Partner</h3>
+                
+                <div class="detail-group">
+                  <span class="detail-label">Name:</span>
+                  <span>${deliveryPartner.name}</span>
+                </div>
+                
+                <div class="detail-group">
+                  <span class="detail-label">Phone:</span>
+                  <span>${deliveryPartner.phone}</span>
+                </div>
+                
+                <div class="detail-group">
+                  <span class="detail-label">Vehicle:</span>
+                  <span>${deliveryPartner.vehicle}</span>
+                </div>
+                
+                <div class="detail-group">
+                  <span class="detail-label">Current Location:</span>
+                  <span id="current-location">${deliveryPartner.currentLocation}</span>
+                </div>
+                
+                <div class="delivery-map" id="map">
+                  <!-- Map will be inserted here by the OpenStreetMap API -->
+                </div>
+              </div>
+            ` : ''}
+          </div>
+          
+          <div class="actions">
+            <a href="/explorecode.html" class="btn">Continue Shopping</a>
+            <a href="tel:919102935431" class="btn">Call Delivery Partner</a>
+            <a href="https://www.google.co.in/maps/place/52,+Kumbhivali,+Maharashtra+410202/@18.8207905,73.2711762,20.62z/data=!4m6!3m5!1s0x3be7e2b5d07802c3:0xb5b2162ddf11d815!8m2!3d18.8206862!4d73.2712278!16s%2Fg%2F11s9ts3xt0?entry=ttu&g_ep=EgoyMDI1MDQyMS4wIKXMDSoJLDEwMjExNjM5SAFQAw%3D%3D" class="btn" id="track-details-btn" target="_blank">Track Order Details</a>
+          </div>
+        `;
+        
+        // Initialize the map if delivery partner info is available
+        if (deliveryPartner) {
+          initializeMap(order.delivery_address, deliveryPartner.location);
+        }
+        
+        // Set up close modal event listener using the global function
+        const closeModalBtn = document.getElementById('close-modal');
+        if (closeModalBtn) {
+          closeModalBtn.addEventListener('click', closeTrackingModal);
+        }
+        
+        // Also add a click listener to modal background for closing
+        document.getElementById('details-modal').addEventListener('click', function(e) {
+          if (e.target === this) {
+            closeTrackingModal();
+          }
+        });
+      }
+      
+      function initializeMap(deliveryAddress, driverLocation) {
+        // Create a map centered at the initial driver location
+        const map = L.map('map').setView([driverLocation.lat, driverLocation.lng], 15);
+        
+        // Add the OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // Add marker for customer location (delivery address)
+        // In a real app, you would geocode the delivery address to get coordinates
+        const customerLocation = { lat: driverLocation.lat + 0.005, lng: driverLocation.lng + 0.005 }; // Simulated customer location
+        const customerMarker = L.marker([customerLocation.lat, customerLocation.lng])
+          .addTo(map)
+          .bindPopup('Delivery Address')
+          .openPopup();
+        
+        // Add marker for driver's current location
+        const driverMarker = L.marker([driverLocation.lat, driverLocation.lng])
+          .addTo(map)
+          .bindPopup('Delivery Partner')
+          .openPopup();
+          
+        // Store the driver marker in a global variable so it can be updated
+        window.driverMarker = driverMarker;
+        window.deliveryMap = map;
+        
+        // Draw a line between driver and delivery address
+        const routeLine = L.polyline([
+            [driverLocation.lat, driverLocation.lng],
+            [customerLocation.lat, customerLocation.lng]
+        ], {color: 'blue'}).addTo(map);
+        
+        // Make sure the map fits both points
+        const bounds = L.latLngBounds([
+            [driverLocation.lat, driverLocation.lng],
+            [customerLocation.lat, customerLocation.lng]
+        ]);
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+      
+      function updateTrackingInfo(orderId) {
+        fetch(`/api/order/${orderId}`)
+          .then(response => response.json())
+          .then(order => {
+            // Update just the parts of the UI that might have changed
+            updateOrderStatus(order);
+            updateDeliveryPartnerLocation(order);
+            updateEstimatedDelivery(order);
+          })
+          .catch(error => {
+            console.error('Error updating tracking info:', error);
+          });
+      }
+      
+      function updateOrderStatus(order) {
+        // Update status labels and progress indicators
+        const statusSteps = ['ordered', 'accepted', 'preparing', 'out_for_delivery', 'delivered'];
+        const currentStepIndex = statusSteps.indexOf(order.status);
+        
+        statusSteps.forEach((step, index) => {
+          const stepEl = document.querySelector(`.step:nth-child(${index + 1})`);
+          if (stepEl) {
+            stepEl.classList.remove('active', 'completed');
+            if (index < currentStepIndex) {
+              stepEl.classList.add('completed');
+            } else if (index === currentStepIndex) {
+              stepEl.classList.add('active');
+            }
+          }
+        });
+      }
+      
+      function updateDeliveryPartnerLocation(order) {
+        // Update the delivery partner's current location on the page and map
+        const deliveryPartner = getDeliveryPartnerInfo(order);
+        const locationEl = document.getElementById('current-location');
+        if (locationEl && deliveryPartner) {
+          locationEl.textContent = deliveryPartner.currentLocation;
+        }
+        
+        // Update the map with the new driver location
+        if (window.driverMarker && deliveryPartner) {
+          const newLatLng = [deliveryPartner.location.lat, deliveryPartner.location.lng];
+          window.driverMarker.setLatLng(newLatLng);
+          
+          // If needed, update the view to keep the driver in sight
+          window.deliveryMap.panTo(newLatLng);
+        }
+      }
+      
+      function updateEstimatedDelivery(order) {
+        // Update the estimated delivery time
+        const etaEl = document.getElementById('delivery-eta');
+        if (etaEl) {
+          etaEl.textContent = 'Estimated delivery: ' + calculateEstimatedDelivery(order);
+        }
+      }
+      
+      function calculateEstimatedDelivery(order) {
+        // This is a placeholder - in a real app, this would use real-time data
+        // from your backend about preparation time and delivery distance
+        if (order.status === 'delivered') {
+          return 'Delivered';
+        }
+        
+        if (order.status === 'cancelled') {
+          return 'Order cancelled';
+        }
+        
+        // Return fixed time instead of calculation
+        return '20mins';
+      }
+      
+      function getDeliveryPartnerInfo(order) {
+        // This is a placeholder - in a real app, this would come from your backend
+        // Only return delivery partner info if the order is out for delivery
+        if (order.status === 'out_for_delivery' || order.status === 'delivered') {
+          // Simulate random coordinates near Bangalore for demonstration
+          const bangaloreCoords = { lat: 12.9716, lng: 77.5946 };
+          // Add some random offset for simulation
+          const lat = bangaloreCoords.lat + (Math.random() - 0.5) * 0.02;
+          const lng = bangaloreCoords.lng + (Math.random() - 0.5) * 0.02;
+          
+          return {
+            name: 'John Doe',
+            phone: '+91 98765 43210',
+            vehicle: 'Honda Activa (Blue)',
+            currentLocation: 'Near ' + (order.delivery_address.split(',')[0] || 'your location'),
+            // In a real app, you would have real GPS coordinates here for the map
+            location: { lat: lat, lng: lng }
+          };
+        }
+        
+        return null;
+      }
+    });
+  </script>
+</body>
+</html> 

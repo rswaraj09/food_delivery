@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OTP Verification</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e1bcbc;;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 300px;
+      text-align: center;
+    }
+    .otp-input {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .otp-input input {
+      width: 35px;
+      height: 40px;
+      text-align: center;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #resend {
+      color: #007BFF;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #resend.disabled {
+      pointer-events: none;
+      color: #999;
+    }
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input[type="tel"] {
+      padding: 8px;
+      width: 100%;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #timer {
+      margin-top: 10px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h3>Enter Mobile Number</h3>
+  <input type="tel" id="mobile" placeholder="e.g. 9876543210" maxlength="10">
+  <button onclick="sendOTP()">Send OTP</button>
+
+  <div id="otp-section" style="display:none;">
+    <div class="otp-input" id="otp-inputs">
+      <input type="text" maxlength="1">
+      <input type="text" maxlength="1">
+      <input type="text" maxlength="1">
+      <input type="text" maxlength="1">
+      <input type="text" maxlength="1">
+      <input type="text" maxlength="1">
+    </div>
+    <div id="timer">Resend OTP in <span id="countdown">30</span>s</div>
+    <div id="resend" class="disabled" onclick="resendOTP()">Resend OTP</div>
+    <button onclick="verifyOTP()">Verify OTP</button>
+    <div id="message"></div>
+  </div>
+</div>
+
+<script>
+  let generatedOTP = "";
+  let timerInterval;
+
+  function sendOTP() {
+    const mobile = document.getElementById("mobile").value;
+    if (mobile.length !== 10) {
+      alert("Enter valid 10-digit mobile number.");
+      return;
+    }
+    generatedOTP = generateOTP();
+    console.log("OTP:", generatedOTP); // Simulate sending OTP
+    document.getElementById("otp-section").style.display = "block";
+    resetInputs();
+    startTimer();
+  }
+
+  function generateOTP() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  function verifyOTP() {
+    const inputs = document.querySelectorAll('#otp-inputs input');
+    let enteredOTP = "";
+    inputs.forEach(input => enteredOTP += input.value);
+    
+    const msg = document.getElementById("message");
+    if (enteredOTP === generatedOTP) {
+      msg.style.color = "green";
+      msg.textContent = "OTP Verified!";
+    } else {
+      msg.style.color = "red";
+      msg.textContent = "Wrong OTP. Try Again.";
+    }
+  }
+
+  function resendOTP() {
+    if (document.getElementById("resend").classList.contains("disabled")) return;
+    generatedOTP = generateOTP();
+    console.log("Resent OTP:", generatedOTP);
+    resetInputs();
+    startTimer();
+  }
+
+  function startTimer() {
+    let timeLeft = 30;
+    const countdown = document.getElementById("countdown");
+    const resend = document.getElementById("resend");
+    resend.classList.add("disabled");
+    countdown.textContent = timeLeft;
+
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      countdown.textContent = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        resend.classList.remove("disabled");
+        countdown.textContent = "0";
+      }
+    }, 1000);
+  }
+
+  function resetInputs() {
+    document.querySelectorAll('#otp-inputs input').forEach(input => input.value = "");
+    document.getElementById("message").textContent = "";
+    document.querySelector('#otp-inputs input').focus();
+  }
+
+  // Auto focus on next input
+  document.querySelectorAll('#otp-inputs input').forEach((input, index, arr) => {
+    input.addEventListener('input', () => {
+      if (input.value && index < arr.length - 1) {
+        arr[index + 1].focus();
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

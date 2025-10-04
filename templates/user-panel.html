@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swift Serve - User Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/swift.css">
+    <style>
+        .user-panel {
+            display: flex;
+            padding-top: 100px;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: var(--bg-color-1);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-right: 2rem;
+        }
+        
+        .sidebar h2 {
+            color: var(--text-color-1);
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--orange);
+            padding-bottom: 1rem;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar ul li {
+            margin-bottom: 1rem;
+        }
+        
+        .sidebar ul li a {
+            display: flex;
+            align-items: center;
+            font-size: 1.6rem;
+            color: var(--text-color-1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar ul li a:hover {
+            background: var(--bg-color-2);
+            color: var(--orange);
+            padding-left: 1.5rem;
+        }
+        
+        .sidebar ul li a i {
+            margin-right: 1rem;
+            font-size: 2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            background: var(--bg-color-1);
+            box-shadow: var(--box-shadow);
+            border-radius: 0.5rem;
+            padding: 2rem;
+        }
+        
+        .welcome-box {
+            background: var(--bg-color-2);
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-box h1 {
+            color: var(--text-color-1);
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-box p {
+            color: var(--text-color-2);
+            font-size: 1.6rem;
+            line-height: 1.7;
+        }
+        
+        .panel-section {
+            margin-bottom: 3rem;
+        }
+        
+        .panel-section h2 {
+            color: var(--text-color-1);
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--orange);
+            padding-left: 1rem;
+        }
+        
+        .order-card {
+            background: var(--bg-color-2);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .order-card .order-info {
+            flex: 1;
+        }
+        
+        .order-card h3 {
+            color: var(--text-color-1);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .order-card p {
+            color: var(--text-color-2);
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .order-status {
+            background: #e0f7e0;
+            color: #2c7623;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        
+        .logout-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .logout-btn:hover {
+            background: #ff5252;
+        }
+        
+        .student-status-box {
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--orange);
+        }
+        
+        .student-status-box h3 {
+            color: var(--text-color-1);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status-verified {
+            color: #28a745;
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            color: #ffc107;
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+        
+        .discount-info {
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .original-price {
+            text-decoration: line-through;
+            color: #dc3545;
+            font-size: 1.4rem;
+        }
+        
+        .discount-badge {
+            background: #28a745;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-in-progress {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+        <div class="page3">
+            <header class="header">
+                <a href="/index.html" class="logo"><i class="ri-restaurant-2-fill"></i> SWIFT SERVE</a>
+                
+                <form action="#" class="search-form">
+                    <input type="search" id="searchBox" placeholder="Search Here...">
+                    <label for="searchBox" class="ri-search-2-line"></label>
+                </form>
+                
+                <div class="icons-container">
+                    <div class="icons">
+                        <div id="search-btn" class="ri-search-2-line"></div> 
+                    </div>
+                    <div class="icons">
+                        <div id="share-btn" class="ri-share-fill"></div>
+                    </div>
+                    <div class="icons">
+                        <a href="/user-panel.html" id="user-btn" class="ri-user-3-fill"></a>
+                    </div>
+                    <div class="icons">
+                        <div id="menu-btn" class="ri-menu-fill"></div>
+                    </div>
+                </div>
+                
+                <nav class="navbar">
+                    <a href="index.html#home">Home</a>
+                    <a href="index.html#packages">Packages</a>
+                    <a href="index.html#services">Services</a>
+                    <a href="index.html#pricing">Pricing</a>
+                    <a href="index.html#review">Review</a>
+                    <a href="index.html#contact">Contact</a>
+                    <a href="index.html#blogs">Blogs</a>
+                </nav>
+            </header>
+            
+            <div class="user-panel">
+                <div class="sidebar">
+                    <h2>User Menu</h2>
+                    <ul>
+                        <li><a href="#dashboard"><i class="ri-dashboard-fill"></i> Dashboard</a></li>
+                        <li><a href="#orders"><i class="ri-shopping-bag-fill"></i> My Orders</a></li>
+                        <li><a href="#profile"><i class="ri-user-settings-fill"></i> Profile</a></li>
+                        <li><a href="#addresses"><i class="ri-map-pin-fill"></i> Addresses</a></li>
+                        <li><a href="#payment"><i class="ri-bank-card-fill"></i> Payment Methods</a></li>
+                        <li><a href="#favorites"><i class="ri-heart-fill"></i> Favorites</a></li>
+                        <li><a href="/api/logout" class="logout-btn"><i class="ri-logout-box-r-line"></i> Logout</a></li>
+                    </ul>
+                </div>
+                
+                <div class="main-content">
+                    <div class="welcome-box">
+                        <h1>Welcome, <span id="user-name">User</span>!</h1>
+                        <p>Manage your orders, update your profile, and explore your favorite meals all in one place.</p>
+                    </div>
+                    
+                    <div class="panel-section" id="dashboard">
+                        <h2>Dashboard</h2>
+                        <div id="student-status-container"></div>
+                        <div id="user-orders-container">
+                            <p>Loading your orders...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-section" id="profile">
+                        <h2>My Profile</h2>
+                        <form action="/api/update-profile" method="POST">
+                            <div class="inputBox">
+                                <input type="text" name="name" placeholder="Full Name" value="User Name">
+                            </div>
+                            <div class="inputBox">
+                                <input type="email" name="email" placeholder="Email" value="user@example.com">
+                            </div>
+                            <div class="inputBox">
+                                <input type="tel" name="phone" placeholder="Phone Number" value="+91 9356360179">
+                            </div>
+                            <button type="submit" class="btn">Update Profile</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <section class="footer">
+                <div class="box-container">
+                    <div class="box">
+                        <h3>Our Branches</h3>
+                        <a href="#"><i class="ri-map-pin-fill"></i> Mumbai</a>
+                        <a href="#"><i class="ri-map-pin-fill"></i> Delhi</a>
+                        <a href="#"><i class="ri-map-pin-fill"></i> Chennai</a>
+                        <a href="#"><i class="ri-map-pin-fill"></i> Kolkata</a>
+                    </div>
+                    
+                    <div class="box">
+                        <h3>Quick Links</h3>
+                        <a href="index.html#home"><i class="ri-home-5-fill"></i> Home</a>
+                        <a href="index.html#packages"><i class="ri-inbox-unarchive-fill"></i> Packages</a>
+                        <a href="index.html#services"><i class="ri-service-fill"></i> Services</a>
+                        <a href="index.html#pricing"><i class="ri-price-tag-3-fill"></i> Prices</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Contact Info</h3>
+                        <a href="tel:+919356360179"><i class="ri-contacts-fill"></i> +91-9356360179</a>
+                        <a href="mailto:swiftserver999@gmail.com"><i class="ri-mail-unread-fill"></i> swiftserver999@gmail.com</a>
+                        <a href="#"><i class="ri-map-pin-2-fill"></i> Mumbai, Raigad-410203</a>
+                    </div>
+    
+                    <div class="box">
+                        <h3>Follow Us</h3>
+                        <a href="#"><i class="ri-facebook-circle-fill"></i> Facebook</a>
+                        <a href="#"><i class="ri-twitter-fill"></i> Twitter</a>
+                        <a href="#"><i class="ri-instagram-fill"></i> Instagram</a>
+                        <a href="#"><i class="ri-whatsapp-fill"></i> Whatsapp</a>
+                    </div>
+                </div>
+                
+                <div class="credit">
+                    <p>&copy; 2025 Swift Serve. All rights reserved.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fetch user data from the backend
+            fetch('/api/user-data')
+                .then(response => {
+                    if (!response.ok) {
+                        // Not logged in, redirect to login
+                        window.location.href = '/login.html';
+                        throw new Error('Not logged in');
+                    }
+                    return response.json();
+                })
+                .then(userData => {
+                    // Update user name in welcome message
+                    document.getElementById('user-name').textContent = userData.name;
+                    
+                    // Fill in profile form values
+                    document.querySelector('input[name="name"]').value = userData.name;
+                    document.querySelector('input[name="email"]').value = userData.email || '';
+                    document.querySelector('input[name="phone"]').value = userData.phone || '';
+                    
+                    // Display student verification status if applicable
+                    const studentStatusContainer = document.getElementById('student-status-container');
+                    if (userData.is_student) {
+                        const statusMsg = userData.is_verified ? 
+                            '<div class="status-verified">✅ Your student status is verified. You receive a 50% discount on all orders!</div>' :
+                            '<div class="status-pending">⏳ Your student verification is pending admin approval.</div>';
+                        
+                        studentStatusContainer.innerHTML = `
+                            <div class="student-status-box">
+                                <h3>Student Discount Status</h3>
+                                ${statusMsg}
+                            </div>
+                        `;
+                    }
+                    
+                    // After getting user data, load their orders
+                    loadUserOrders();
+                })
+                .catch(error => {
+                    console.error('Error fetching user data:', error);
+                });
+            
+            // Function to load user orders
+            function loadUserOrders() {
+                fetch('/api/user/orders')
+                    .then(response => response.json())
+                    .then(orders => {
+                        const container = document.getElementById('user-orders-container');
+                        
+                        if (!orders || orders.length === 0) {
+                            container.innerHTML = '<p>You have no orders yet. Start ordering delicious food now!</p>';
+                            return;
+                        }
+                        
+                        // Clear loading message
+                        container.innerHTML = '';
+                        
+                        // Sort orders by date (newest first)
+                        orders.sort((a, b) => new Date(b.order_date) - new Date(a.order_date));
+                        
+                        // Display each order
+                        orders.forEach(order => {
+                            const orderCard = document.createElement('div');
+                            orderCard.className = 'order-card';
+                            
+                            // Format order date
+                            const orderDate = new Date(order.order_date);
+                            const formattedDate = orderDate.toLocaleString();
+                            
+                            // Create items list
+                            const itemsList = order.items.map(item => 
+                                `${item.quantity}x ${item.item_name}`
+                            ).join(', ');
+                            
+                            // Create discount info if applicable
+                            let discountInfo = '';
+                            if (order.discount_applied) {
+                                const originalPrice = (parseFloat(order.total_amount) * 100 / (100 - order.discount_percentage)).toFixed(2);
+                                discountInfo = `
+                                    <p class="discount-info">
+                                        <span class="original-price">Original: ₹${originalPrice}</span>
+                                        <span class="discount-badge">Student Discount: ${order.discount_percentage}% OFF</span>
+                                    </p>
+                                `;
+                            }
+                            
+                            // Get appropriate status class
+                            let statusClass = 'status-pending';
+                            switch(order.status) {
+                                case 'delivered':
+                                    statusClass = 'status-delivered';
+                                    break;
+                                case 'cancelled':
+                                    statusClass = 'status-cancelled';
+                                    break;
+                                case 'preparing':
+                                case 'accepted':
+                                case 'out_for_delivery':
+                                    statusClass = 'status-in-progress';
+                                    break;
+                            }
+                            
+                            orderCard.innerHTML = `
+                                <div class="order-info">
+                                    <h3>Order #${order.id} - ${order.business_name}</h3>
+                                    <p><strong>Items:</strong> ${itemsList}</p>
+                                    <p><strong>Total:</strong> ₹${parseFloat(order.total_amount).toFixed(2)}</p>
+                                    ${discountInfo}
+                                    <p><strong>Order Time:</strong> ${formattedDate}</p>
+                                </div>
+                                <div class="order-status ${statusClass}">${order.status}</div>
+                            `;
+                            
+                            container.appendChild(orderCard);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching orders:', error);
+                        document.getElementById('user-orders-container').innerHTML = 
+                            '<p>Unable to load your orders. Please try again later.</p>';
+                    });
+            }
+            
+            // Navbar toggle
+            let navbar = document.querySelector('.navbar');
+            document.querySelector('#menu-btn').addEventListener('click', () => {
+                navbar.classList.toggle('active');
+            });
+            
+            // Search form toggle
+            let searchForm = document.querySelector('.search-form');
+            document.querySelector('#search-btn').addEventListener('click', () => {
+                searchForm.classList.toggle('active');
+            });
+        });
+    </script>
+</body>
+</html> 
